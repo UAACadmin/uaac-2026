@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UAAC–AAUC 2026 — Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+:root{
+  --red:#C0392B;--red-dark:#922B21;--red-light:#FADBD8;--red-xlight:#FDF2F0;
+  --g900:#1A1A1A;--g800:#2D2D2D;--g600:#555;--g400:#9A9A9A;--g200:#DEDEDE;--g100:#F0EFED;--g50:#F8F7F5;--white:#fff;
+  --serif:'Playfair Display',Georgia,serif;--sans:'Source Sans 3','Helvetica Neue',sans-serif;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.07);--tr:.2s ease
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--sans);font-size:.9375rem;color:var(--g600);background:var(--g50)}
+
+/* ── Header ── */
+.site-header{background:var(--g900);color:var(--white);display:flex;align-items:center;padding:.5rem 1.8rem;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--red);gap:1.5rem;min-height:58px}
+.hdr-logos{display:flex;align-items:center;gap:1.2rem}
+.hdr-logo-img{height:32px;width:auto;display:block;filter:brightness(0) invert(1)}
+.hdr-logo-img.concordia{height:28px}
+.hdr-divider{width:1px;height:30px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-text{display:flex;flex-direction:column;gap:.1rem}
+.hdr-wordmark{font-family:var(--serif);font-size:.85rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.01em;line-height:1.2}
+.hdr-sub{font-family:var(--sans);font-size:.62rem;font-weight:400;letter-spacing:.04em;color:var(--g400);line-height:1.2}
+
+/* ── Loading / Error ── */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;gap:1rem;color:var(--g400)}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--g200);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-state{background:var(--red-xlight);border:1px solid var(--red-light);border-radius:4px;padding:1.2rem 1.5rem;color:var(--red-dark);font-size:.9rem;margin:2rem}
+.error-state strong{display:block;margin-bottom:.4rem}
+
+/* ── Day selector ── */
+.sched-day-selector{display:flex;gap:0;margin:0;overflow:hidden;border-bottom:1px solid var(--g200);width:100%}
+.sched-day-btn{flex:1;background:var(--white);border:none;border-right:1px solid var(--g200);padding:.7rem .8rem;cursor:pointer;text-align:center;transition:background var(--tr),color var(--tr);font-family:var(--sans)}
+.sched-day-btn:last-child{border-right:none}
+.sched-day-btn .dn{display:block;font-size:.9rem;font-weight:700;color:var(--g800);line-height:1.2}
+.sched-day-btn .dd{display:block;font-size:.78rem;font-weight:400;color:var(--g400);margin-top:.08rem}
+.sched-day-btn:hover{background:var(--red-xlight)}
+.sched-day-btn:hover .dn{color:var(--red-dark)}
+.sched-day-btn.active{background:var(--red)}
+.sched-day-btn.active .dn,.sched-day-btn.active .dd{color:var(--white)}
+.sched-day-btn-sat{border-left:2px solid var(--g200)!important}
+.sched-day-btn-sat .dn{font-size:.78rem!important}
+
+/* ── Grid ── */
+.sched-grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0;padding:0}
+.sg{border-collapse:collapse;width:100%;background:var(--white);font-family:var(--sans);table-layout:fixed}
+.sg th.sg-corner{background:var(--g50);width:58px;min-width:58px;border:1px solid var(--g200)}
+.sg th.sg-room{background:var(--white);padding:.5rem .5rem .4rem;text-align:center;font-size:.72rem;font-weight:700;color:var(--g800);border:1px solid var(--g200);min-width:115px;line-height:1.25}
+.sg td.sg-time{background:var(--g50);font-size:.7rem;font-weight:700;color:var(--g600);text-align:center;padding:.4rem .2rem;border:1px solid var(--g200);vertical-align:middle;white-space:nowrap;width:58px;min-width:58px}
+.sg td.sg-cell{border:1px solid var(--g200);padding:0;vertical-align:top}
+.sg-inner{padding:.45rem .5rem;min-height:100px;display:flex;flex-direction:column;cursor:pointer;transition:background var(--tr)}
+.sg-inner:hover{background:var(--red-xlight)}
+.sg-inner.empty{background:var(--g50);cursor:default;min-height:80px}
+.sg-inner.empty:hover{background:var(--g50)}
+.sg-inner.sg-mothership{background:var(--g100);cursor:default}
+.sg-inner.sg-mothership:hover{background:var(--g200)}
+.sg-id{font-weight:800;font-size:.68rem;color:var(--red);letter-spacing:.05em;margin-bottom:.15rem;line-height:1}
+.sg-title{font-size:.7rem;color:var(--g800);line-height:1.3;flex:1;margin-bottom:.2rem}
+.sg-chair{font-size:.63rem;color:var(--g400);font-style:italic;margin-top:auto}
+
+/* ── Legend ── */
+.sched-legend{display:flex;align-items:center;gap:1.2rem;padding:.6rem 1rem;font-size:.72rem;color:var(--g400);background:var(--g50)}
+.leg-item{display:flex;align-items:center;gap:.35rem}
+.leg-box{width:13px;height:13px;border-radius:2px;border:1px solid var(--g200);flex-shrink:0;background:var(--white)}
+
+.hdr-link{font-family:var(--sans);font-size:.75rem;font-weight:600;color:rgba(255,255,255,.85);text-decoration:none;white-space:nowrap;border:1px solid rgba(255,255,255,.3);border-radius:3px;padding:.3rem .7rem;margin-left:auto;transition:background var(--tr),color var(--tr)}
+.hdr-link:hover{background:rgba(255,255,255,.12);color:var(--white)}
+
+/* ── Rotate device hint (mobile portrait only) ── */
+.rotate-hint{display:none}
+@media (max-width:600px) and (orientation:portrait){
+  .rotate-hint{
+    display:flex;align-items:center;gap:.6rem;
+    background:var(--g900);color:var(--white);
+    padding:.65rem 1rem;font-size:.78rem;line-height:1.4;
+  }
+  .rotate-hint svg{width:22px;height:22px;flex-shrink:0;stroke:var(--white);fill:none;stroke-width:1.6;
+    animation:rotatePulse 1.6s ease-in-out infinite}
+}
+@keyframes rotatePulse{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-90deg)}}
+
+.sched-tooltip{position:fixed;z-index:1000;background:var(--g900);color:var(--white);padding:.6rem .85rem;border-radius:4px;font-size:.75rem;line-height:1.5;max-width:290px;pointer-events:none;opacity:0;transition:opacity .15s ease;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.sched-tooltip.show{opacity:1}
+.sched-tooltip strong{display:block;font-family:var(--serif);font-size:.82rem;margin-bottom:.25rem}
+.sched-tooltip .tip-meta{color:var(--g400);font-size:.68rem;margin-top:.15rem}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="hdr-logos">
+    <img src="https://uaac-aauc.com/wp-content/uploads/UAAC_Logo.png" alt="UAAC–AAUC" class="hdr-logo-img" onerror="this.style.display='none'">
+    <div class="hdr-divider"></div>
+    <img src="https://www.concordia.ca/etc/designs/concordia/clientlibs/img/logo-concordia-university-montreal.svg" alt="Concordia University" class="hdr-logo-img concordia" onerror="this.style.display='none'">
+    <div class="hdr-divider"></div>
+    <div class="hdr-text">
+      <span class="hdr-wordmark">UAAC – AAUC 2026 — Schedule</span>
+      <span class="hdr-sub">October 13–15, 2026 &nbsp;·&nbsp; Concordia University, Montréal</span>
+    </div>
+  </div>
+  <a class="hdr-link" href="https://uaacadmin.github.io/uaac-2026/UAAC_2026_Programme_only.html" target="_blank" rel="noopener">📋 Programme</a>
+</header>
+
+<div class="rotate-hint">
+  <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+  <span>For the best view of the schedule grid, please rotate your phone to landscape mode.</span>
+</div>
+
+<div class="loading-state" id="loadingState">
+  <div class="loading-spinner"></div>
+  <span style="font-size:.85rem">Loading schedule…</span>
+</div>
+<div id="scheduleContent" style="display:none"></div>
+
+<div class="sched-tooltip" id="schedTooltip"></div>
+
+<script>
+const API_KEY      = 'AIzaSyD69jg-Vo2u9DGhKLk1OFiHPY6JXCc38Oc';
+const SHEET_ID     = '1P2M1x2-N-lW1W1-ur4SP0UZ9IMTlvYQYLQ-QraGRAXo';
+const SESSIONS_TAB = 'Sessions';
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function formatDate(d) {
+  const s = String(d||'').trim();
+  if (!s) return '';
+  if (s.includes('13')) return 'Tuesday, October 13';
+  if (s.includes('14')) return 'Wednesday, October 14';
+  if (s.includes('15')) return 'Thursday, October 15';
+  return s;
+}
+
+function to12h(t) {
+  t = String(t||'').trim();
+  if (!t) return '';
+  t = t.replace(/^(\d{1,2}:\d{2}):\d{2}(\s*(am|pm))?/i, '$1$2').trim();
+  let h, min, hasMeridiem = /am|pm/i.test(t);
+  if (hasMeridiem) {
+    const isPM = /pm/i.test(t);
+    const m = t.match(/(\d{1,2}):(\d{2})/);
+    if (!m) return t;
+    h = parseInt(m[1]); min = m[2];
+    if (isPM && h !== 12) h += 12;
+    if (!isPM && h === 12) h = 0;
+  } else {
+    const m = t.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return t;
+    h = parseInt(m[1]); min = m[2];
+  }
+  const ap = h < 12 ? 'am' : 'pm';
+  let h12 = h % 12; if (h12 === 0) h12 = 12;
+  return `${h12}:${min} ${ap}`;
+}
+
+function timeRange(start, end) {
+  if (!start) return '';
+  const s = to12h(start), e = to12h(end);
+  return e ? `${s}–${e}` : s;
+}
+
+async function fetchSessions() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SESSIONS_TAB)}?key=${API_KEY}`;
+  const r = await fetch(url);
+  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || `HTTP ${r.status}`) }
+  const data = await r.json();
+  const rows = data.values || [];
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h).trim());
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (row[i] !== undefined ? String(row[i]) : '').trim(); });
+    return obj;
+  });
+}
+
+function buildSchedule(sessions) {
+  const loading = document.getElementById('loadingState');
+  const content = document.getElementById('scheduleContent');
+
+  const DAY_ORDER = ['Tuesday, October 13', 'Wednesday, October 14', 'Thursday, October 15'];
+  const DAY_LABEL = {
+    'Tuesday, October 13':   ['Tuesday',   'Oct 13'],
+    'Wednesday, October 14': ['Wednesday', 'Oct 14'],
+    'Thursday, October 15':  ['Thursday',  'Oct 15'],
+  };
+  const isOmitRoom  = r => !r || /^#?n\/a$/i.test(r.trim());
+  const MOTHERSHIP_ROOM = 'EV5.775 junction';
+  const CCA_ROOM        = 'CCA';
+
+  const normAll = sessions.map(s => ({
+    id:    (s['ID'] || '').trim(),
+    title: (s['Session Title'] || '').trim(),
+    chair: (s['Chair'] || '').trim(),
+    room:  (s['Location'] || '').trim(),
+    date:  formatDate((s['Date'] || '').trim()),
+    start: (s['Start Time'] || '').trim(),
+    end:   (s['End Time'] || '').trim(),
+  }));
+
+  const satelliteSessions = normAll.filter(s => /^S/i.test(s.id));
+  const normSessions = normAll.filter(s =>
+    s.date && s.room && s.start && !isOmitRoom(s.room) && !/^S/i.test(s.id)
+  );
+
+  const days = [...new Set(normSessions.map(s => s.date))]
+    .filter(d => DAY_ORDER.includes(d))
+    .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+
+  const rawRooms = [];
+  normSessions.forEach(s => { if (s.room && !rawRooms.includes(s.room)) rawRooms.push(s.room); });
+  const roomsWithoutCCA = rawRooms.filter(r => r !== CCA_ROOM);
+  const mothIdx = roomsWithoutCCA.indexOf(MOTHERSHIP_ROOM);
+  const rooms = (mothIdx >= 0 && rawRooms.includes(CCA_ROOM))
+    ? [...roomsWithoutCCA.slice(0, mothIdx + 1), CCA_ROOM, ...roomsWithoutCCA.slice(mothIdx + 1)]
+    : roomsWithoutCCA;
+
+  const allSlots = [...new Set(normSessions.map(s => s.start))].sort();
+  const lookup = {};
+  normSessions.forEach(s => { lookup[`${s.date}|${s.start}|${s.room}`] = s; });
+  const mothSession = normAll.find(s => s.room === MOTHERSHIP_ROOM);
+
+  function renderCell(s, room) {
+    const displayId = s.id || 'TBD';
+    const title     = s.title || '—';
+    const tr        = timeRange(s.start, s.end);
+    let tip = `<strong>${esc(title)}</strong>`;
+    tip += `<div class="tip-meta">${esc(displayId)} · ${esc(room)}${tr ? ' · ' + esc(tr) : ''}</div>`;
+    if (s.chair) tip += `<div class="tip-meta">Chair: ${esc(s.chair)}</div>`;
+    return `<td class="sg-cell">
+      <div class="sg-inner" data-tip="${esc(tip)}">
+        <div class="sg-id">${esc(displayId)}</div>
+        <div class="sg-title">${esc(title.length > 80 ? title.slice(0, 78) + '…' : title)}</div>
+        ${s.chair ? `<div class="sg-chair">${esc(s.chair)}</div>` : ''}
+      </div></td>`;
+  }
+
+  const satIndex = days.length;
+  let html = `<div class="sched-day-selector">`;
+  days.forEach((day, i) => {
+    const [dn, dd] = DAY_LABEL[day] || [day, ''];
+    html += `<button class="sched-day-btn${i === 0 ? ' active' : ''}" onclick="showDay(${i})">
+      <span class="dn">${esc(dn)}</span><span class="dd">${esc(dd)}</span>
+    </button>`;
+  });
+  html += `<button class="sched-day-btn sched-day-btn-sat" onclick="showDay(${satIndex})">
+    <span class="dn">Satellite &amp; Off-Site</span><span class="dd">Oct 16</span>
+  </button></div>`;
+
+  days.forEach((day, di) => {
+    const daySlots = allSlots.filter(sl => normSessions.some(s => s.date === day && s.start === sl));
+    html += `<div class="sched-grid-wrap" id="sg-day-${di}" style="${di > 0 ? 'display:none' : ''}">
+      <table class="sg" cellspacing="0"><thead><tr><th class="sg-corner"></th>`;
+    rooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
+    html += `</tr></thead><tbody>`;
+    daySlots.forEach(slot => {
+      html += `<tr><td class="sg-time">${esc(to12h(slot))}</td>`;
+      rooms.forEach(room => {
+        if (room === MOTHERSHIP_ROOM) {
+          const ms = mothSession || { id: 'I', title: 'Mothership', chair: '' };
+          let tip = `<strong>Mothership</strong><div class="tip-meta">${esc(MOTHERSHIP_ROOM)}</div>`;
+          if (ms.chair) tip += `<div class="tip-meta">Chair: ${esc(ms.chair)}</div>`;
+          html += `<td class="sg-cell"><div class="sg-inner sg-mothership" data-tip="${esc(tip)}">
+            <div class="sg-id">${esc(ms.id || 'I')}</div>
+            <div class="sg-title">Mothership</div>
+            ${ms.chair ? `<div class="sg-chair">${esc(ms.chair)}</div>` : ''}
+          </div></td>`;
+          return;
+        }
+        const s = lookup[`${day}|${slot}|${room}`];
+        html += s ? renderCell(s, room) : `<td class="sg-cell"><div class="sg-inner empty"></div></td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+
+  // Satellite grid
+  html += `<div class="sched-grid-wrap" id="sg-day-${satIndex}" style="display:none">`;
+  if (satelliteSessions.length) {
+    const satRooms = [];
+    satelliteSessions.forEach(s => { if (s.room && !isOmitRoom(s.room) && !satRooms.includes(s.room)) satRooms.push(s.room); });
+    const satSlots = [...new Set(satelliteSessions.map(s => s.start))].sort();
+    const satLookup = {};
+    satelliteSessions.forEach(s => { satLookup[`${s.start}|${s.room}`] = s; });
+    html += `<table class="sg" cellspacing="0"><thead><tr><th class="sg-corner"></th>`;
+    satRooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
+    html += `</tr></thead><tbody>`;
+    satSlots.forEach(slot => {
+      html += `<tr><td class="sg-time">${esc(to12h(slot))}</td>`;
+      satRooms.forEach(room => {
+        const s = satLookup[`${slot}|${room}`];
+        html += s ? renderCell(s, room) : `<td class="sg-cell"><div class="sg-inner empty"></div></td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+  } else {
+    html += `<p style="padding:1.5rem;color:var(--g400);font-size:.85rem">No satellite or off-site sessions found.</p>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="sched-legend">
+    <div class="leg-item"><div class="leg-box"></div>
+      <span>Hover for details</span>
+    </div>
+  </div>`;
+
+  content.innerHTML = html;
+  content.style.display = ''; loading.style.display = 'none';
+
+  // Tooltip
+  const tip = document.getElementById('schedTooltip');
+  content.addEventListener('mouseover', e => {
+    const cell = e.target.closest('[data-tip]');
+    if (!cell) { tip.classList.remove('show'); return; }
+    tip.innerHTML = cell.dataset.tip; tip.classList.add('show');
+  });
+  content.addEventListener('mousemove', e => {
+    tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 305) + 'px';
+    tip.style.top  = Math.min(e.clientY + 14, window.innerHeight - 145) + 'px';
+  });
+  content.addEventListener('mouseleave', () => tip.classList.remove('show'));
+}
+
+window.showDay = function(i) {
+  document.querySelectorAll('[id^="sg-day-"]').forEach((el, j) => { el.style.display = j === i ? '' : 'none'; });
+  document.querySelectorAll('.sched-day-btn').forEach((el, j) => { el.classList.toggle('active', j === i); });
+};
+
+(async function() {
+  try {
+    const sessions = await fetchSessions();
+    if (!sessions.length) throw new Error('Sessions tab is empty.');
+    buildSchedule(sessions);
+  } catch(err) {
+    document.getElementById('loadingState').innerHTML =
+      `<div class="error-state"><strong>Could not load schedule</strong><p>${esc(err.message)}</p></div>`;
+  }
+})();
+</script>
+</body>
+</html>
