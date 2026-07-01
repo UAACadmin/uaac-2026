@@ -212,18 +212,49 @@ function buildSchedule(sessions) {
     .filter(d => DAY_ORDER.includes(d))
     .sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
 
-  const rawRooms = [];
-  normSessions.forEach(s => { if (s.room && !rawRooms.includes(s.room)) rawRooms.push(s.room); });
-  const roomsWithoutCCA = rawRooms.filter(r => r !== CCA_ROOM);
-  const mothIdx = roomsWithoutCCA.indexOf(MOTHERSHIP_ROOM);
-  const rooms = (mothIdx >= 0 && rawRooms.includes(CCA_ROOM))
-    ? [...roomsWithoutCCA.slice(0, mothIdx + 1), CCA_ROOM, ...roomsWithoutCCA.slice(mothIdx + 1)]
-    : roomsWithoutCCA;
+  // Normalise room name to bare alphanumeric for matching:
+  // "EV 3.711" = "EV3.711" = "ev3711" after stripping spaces, dots, case
+  function normRoom(r){ return String(r||'').toLowerCase().replace(/[\s.\-_]/g,''); }
+
+  // The canonical display order — these are the labels as we want them shown
+  const ROOM_ORDER = [
+    'EV1.605',
+    'EV3.711',
+    'EV7.745',
+    'EV1.615',
+    'EV6.735',
+    '4th Space',
+    'EV3.760',
+    'EV7.735',
+    'EV5.775 junction',
+    'CCA',
+    'ER-672',
+    'VA 215 Curatorial Lab',
+  ];
+
+  // Build a map: normRoom(orderEntry) → actual raw room string from data
+  // This lets us use the data's exact room string for lookup keys,
+  // while displaying rooms in the specified order.
+  const presentRooms = [...new Set(normSessions.map(s => s.room))];
+  const normToRaw = {};
+  presentRooms.forEach(raw => { normToRaw[normRoom(raw)] = raw; });
+
+  // Build ordered rooms array using data's actual room strings (for lookup)
+  const rooms = [];
+  ROOM_ORDER.forEach(orderLabel => {
+    const key = normRoom(orderLabel);
+    if (normToRaw[key]) rooms.push(normToRaw[key]); // use the real data string
+  });
+  // Append any data rooms not in ROOM_ORDER at the end
+  presentRooms.forEach(raw => {
+    if (!rooms.includes(raw)) rooms.push(raw);
+  });
 
   const allSlots = [...new Set(normSessions.map(s => s.start))].sort();
+  // Lookup keyed by day|slot|normRoom(room) so spacing/dot variants all match
   const lookup = {};
-  normSessions.forEach(s => { lookup[`${s.date}|${s.start}|${s.room}`] = s; });
-  const mothSession = normAll.find(s => s.room === MOTHERSHIP_ROOM);
+  normSessions.forEach(s => { lookup[`${s.date}|${s.start}|${normRoom(s.room)}`] = s; });
+  const mothSession = normAll.find(s => normRoom(s.room) === normRoom(MOTHERSHIP_ROOM));
 
   function renderCell(s, room) {
     const displayId = s.id || 'TBD';
@@ -254,16 +285,23 @@ function buildSchedule(sessions) {
 
   days.forEach((day, di) => {
     const daySlots = allSlots.filter(sl => normSessions.some(s => s.date === day && s.start === sl));
+
+    // Only show room columns that have at least one session on this day,
+    // but always include MOTHERSHIP_ROOM if it has any sessions at all
+    const dayRooms = rooms.filter(room =>
+      normRoom(room) === normRoom(MOTHERSHIP_ROOM) ||
+      daySlots.some(slot => lookup[`${day}|${slot}|${normRoom(room)}`])
+    );
     html += `<div class="sched-grid-wrap" id="sg-day-${di}" style="${di > 0 ? 'display:none' : ''}">
       <table class="sg" cellspacing="0"><thead><tr><th class="sg-corner"></th>`;
-    rooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
+    dayRooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
     html += `</tr></thead><tbody>`;
     daySlots.forEach(slot => {
       html += `<tr><td class="sg-time">${esc(to12h(slot))}</td>`;
-      rooms.forEach(room => {
-        if (room === MOTHERSHIP_ROOM) {
+      dayRooms.forEach(room => {
+        if (normRoom(room) === normRoom(MOTHERSHIP_ROOM)) {
           const ms = mothSession || { id: 'I', title: 'Mothership', chair: '' };
-          let tip = `<strong>Mothership</strong><div class="tip-meta">${esc(MOTHERSHIP_ROOM)}</div>`;
+          let tip = `<strong>Mothership</strong><div class="tip-meta">${esc(room)}</div>`;
           if (ms.chair) tip += `<div class="tip-meta">Chair: ${esc(ms.chair)}</div>`;
           html += `<td class="sg-cell"><div class="sg-inner sg-mothership" data-tip="${esc(tip)}">
             <div class="sg-id">${esc(ms.id || 'I')}</div>
@@ -272,7 +310,7 @@ function buildSchedule(sessions) {
           </div></td>`;
           return;
         }
-        const s = lookup[`${day}|${slot}|${room}`];
+        const s = lookup[`${day}|${slot}|${normRoom(room)}`];
         html += s ? renderCell(s, room) : `<td class="sg-cell"><div class="sg-inner empty"></div></td>`;
       });
       html += `</tr>`;

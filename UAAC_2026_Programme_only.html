@@ -489,6 +489,25 @@ function buildProgramme(sessions) {
 }
 
 // ── Navigation: step through TOC order ───────────────────────────────────────
+function togglePanel(btn,id){
+  const p=document.getElementById(id);
+  const o=btn.getAttribute('aria-expanded')==='true';
+  btn.setAttribute('aria-expanded',String(!o));
+  p.hidden=o;
+}
+function toggleDay(id){
+  const b=document.getElementById(id);
+  const btn=b.previousElementSibling;
+  const c=b.classList.toggle('collapsed');
+  btn.setAttribute('aria-expanded',String(!c));
+}
+function toggleSlot(id){
+  const l=document.getElementById(id);
+  const btn=l.previousElementSibling;
+  const c=l.classList.toggle('collapsed');
+  btn.setAttribute('aria-expanded',String(!c));
+}
+
 function navStep(dir) {
   const next = _navIdx + dir;
   if (next < 0 || next >= _orderedAnchors.length) return;
