@@ -64,6 +64,9 @@ body{font-family:var(--sans);font-size:.9375rem;color:var(--g600);background:var
 .sg-title{font-size:.7rem;color:var(--g800);line-height:1.3;flex:1;margin-bottom:.2rem}
 .sg-chair{font-size:.63rem;color:var(--g400);font-style:italic;margin-top:auto}
 
+.sg-inner.sg-event{background:#f0ece4;cursor:default}
+.sg-inner.sg-event:hover{background:#e8e3d8}
+.sg-inner.sg-event .sg-id{color:var(--g600)}
 /* ── Break / Registration row ── */
 .sg-break-row td{border-left:none;border-right:none;padding:0}
 .sg-break-row td.sg-time{background:#f5efd6;color:#7a6020;border:1px solid #e0d099;font-size:.62rem}
@@ -206,11 +209,32 @@ function buildSchedule(sessions) {
     date:  formatDate((s['Date'] || '').trim()),
     start: (s['Start Time'] || '').trim(),
     end:   (s['End Time'] || '').trim(),
+    type:  (s['Type of session'] || '').trim(),
   }));
 
   const satelliteSessions = normAll.filter(s => /^S/i.test(s.id));
+
+  // Break sessions (CB/R) may have blank Date cells in the sheet (merged cell in Sheets
+  // only populates the first row). Build a break lookup from ALL rows, using the raw
+  // session list indexed by start time — we detect them by ID/title/type alone.
+  function isBreakSession(s) {
+    return /^R\d/i.test(s.id) || /^CB/i.test(s.id) ||
+           /^coffee break$/i.test(s.title) ||
+           /^registration/i.test(s.title) ||
+           /break/i.test(s.type);
+  }
+
+  // Map of start-time → break session for quick lookup
+  const breakBySlot = {};
+  normAll.forEach(s => {
+    if (isBreakSession(s) && s.start) {
+      if (!breakBySlot[s.start]) breakBySlot[s.start] = s;
+    }
+  });
+
   const normSessions = normAll.filter(s =>
     s.date && s.room && s.start && !isOmitRoom(s.room) && !/^S/i.test(s.id)
+    && !isBreakSession(s)  // keep breaks out of the regular grid
   );
 
   const days = [...new Set(normSessions.map(s => s.date))]
@@ -228,6 +252,7 @@ function buildSchedule(sessions) {
     'EV7.745',
     'EV1.615',
     'EV6.735',
+    'EV6.720 classroom',
     '4th Space',
     'EV3.760',
     'EV7.735',
@@ -268,8 +293,11 @@ function buildSchedule(sessions) {
     return h * 60 + mn;
   }
 
-  const allSlots = [...new Set(normSessions.map(s => s.start))]
-    .sort((a, b) => toMins(a) - toMins(b)); // chronological, not lexicographic
+  // All slots = regular sessions + break slots, sorted chronologically
+  const allSlots = [...new Set([
+    ...normSessions.map(s => s.start),
+    ...Object.keys(breakBySlot)
+  ])].sort((a, b) => toMins(a) - toMins(b));
   // Lookup keyed by day|slot|normRoom(room) so spacing/dot variants all match
   const lookup = {};
   normSessions.forEach(s => { lookup[`${s.date}|${s.start}|${normRoom(s.room)}`] = s; });
@@ -279,14 +307,17 @@ function buildSchedule(sessions) {
     const displayId = s.id || 'TBD';
     const title     = s.title || '—';
     const tr        = timeRange(s.start, s.end);
+    const isEvent   = /^V/i.test(s.id) || /^event$/i.test(s.type);
     let tip = `<strong>${esc(title)}</strong>`;
     tip += `<div class="tip-meta">${esc(displayId)} · ${esc(room)}${tr ? ' · ' + esc(tr) : ''}</div>`;
     if (s.chair) tip += `<div class="tip-meta">Chair: ${esc(s.chair)}</div>`;
+    const innerClass = isEvent ? 'sg-inner sg-event' : 'sg-inner';
     return `<td class="sg-cell">
-      <div class="sg-inner" data-tip="${esc(tip)}">
+      <div class="${innerClass}" data-tip="${esc(tip)}"${isEvent ? '' : ''}>
         <div class="sg-id">${esc(displayId)}</div>
         <div class="sg-title">${esc(title.length > 80 ? title.slice(0, 78) + '…' : title)}</div>
         ${s.chair ? `<div class="sg-chair">${esc(s.chair)}</div>` : ''}
+        ${tr ? `<div class="sg-chair">${esc(tr)}</div>` : ''}
       </div></td>`;
   }
 
@@ -303,30 +334,28 @@ function buildSchedule(sessions) {
   </button></div>`;
 
   days.forEach((day, di) => {
-    const daySlots = allSlots.filter(sl => normSessions.some(s => s.date === day && s.start === sl));
+    // Include slots that have regular sessions OR break sessions on this day
+    const daySlots = allSlots.filter(sl =>
+      normSessions.some(s => s.date === day && s.start === sl) ||
+      breakBySlot[sl]  // breaks apply to every day
+    );
 
-    // Only show room columns that have at least one session on this day,
-    // but always include MOTHERSHIP_ROOM if it has any sessions at all
+    // Only show room columns that have at least one regular session on this day
     const dayRooms = rooms.filter(room =>
       normRoom(room) === normRoom(MOTHERSHIP_ROOM) ||
       daySlots.some(slot => lookup[`${day}|${slot}|${normRoom(room)}`])
     );
+
     html += `<div class="sched-grid-wrap" id="sg-day-${di}" style="${di > 0 ? 'display:none' : ''}">
       <table class="sg" cellspacing="0"><thead><tr><th class="sg-corner"></th>`;
     dayRooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
     html += `</tr></thead><tbody>`;
-    daySlots.forEach(slot => {
-      // Detect if this slot is a break/registration:
-      // IDs starting with R (Registration/Coffee Break) OR
-      // session type contains "break" in any room on this slot
-      const slotSessions = dayRooms.map(r => lookup[`${day}|${slot}|${normRoom(r)}`]).filter(Boolean);
-      const isBreak = slotSessions.length > 0 && slotSessions.every(s =>
-        /^R/i.test(s.id) || /break|registration/i.test(s.title)
-      );
 
-      if (isBreak) {
-        // Thin gold row spanning all columns — no room cells shown
-        const breakLabel = slotSessions[0]?.title || 'Break';
+    daySlots.forEach(slot => {
+      // Check if this slot is a break — use breakBySlot keyed by start time
+      const breakSess = breakBySlot[slot];
+      if (breakSess) {
+        const breakLabel = breakSess.title || 'Break';
         html += `<tr class="sg-break-row">
           <td class="sg-time">${esc(to12h(slot))}</td>
           <td class="sg-break-cell" colspan="${dayRooms.length}">${esc(breakLabel)}</td>
