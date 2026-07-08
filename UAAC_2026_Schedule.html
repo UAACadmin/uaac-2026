@@ -64,6 +64,11 @@ body{font-family:var(--sans);font-size:.9375rem;color:var(--g600);background:var
 .sg-title{font-size:.7rem;color:var(--g800);line-height:1.3;flex:1;margin-bottom:.2rem}
 .sg-chair{font-size:.63rem;color:var(--g400);font-style:italic;margin-top:auto}
 
+/* ── Break / Registration row ── */
+.sg-break-row td{border-left:none;border-right:none;padding:0}
+.sg-break-row td.sg-time{background:#f5efd6;color:#7a6020;border:1px solid #e0d099;font-size:.62rem}
+.sg-break-cell{background:#fdf7e3;border-top:1px solid #e0d099;border-bottom:1px solid #e0d099;padding:.22rem .7rem;font-size:.67rem;font-weight:600;color:#7a6020;letter-spacing:.03em;font-style:italic;text-align:left}
+
 /* ── Legend ── */
 .sched-legend{display:flex;align-items:center;gap:1.2rem;padding:.6rem 1rem;font-size:.72rem;color:var(--g400);background:var(--g50)}
 .leg-item{display:flex;align-items:center;gap:.35rem}
@@ -250,7 +255,21 @@ function buildSchedule(sessions) {
     if (!rooms.includes(raw)) rooms.push(raw);
   });
 
-  const allSlots = [...new Set(normSessions.map(s => s.start))].sort();
+  // Convert a raw start-time string to minutes since midnight for sorting
+  function toMins(t) {
+    t = String(t||'').trim();
+    // Strip seconds: "9:30:00 AM" → "9:30 AM"
+    t = t.replace(/^(\d{1,2}:\d{2}):\d{2}(\s*(am|pm))?/i, '$1$2').trim();
+    const m = t.match(/(\d{1,2}):(\d{2})/);
+    if (!m) return 9999;
+    let h = parseInt(m[1]), mn = parseInt(m[2]);
+    if (/pm/i.test(t) && h !== 12) h += 12;
+    if (/am/i.test(t) && h === 12) h = 0;
+    return h * 60 + mn;
+  }
+
+  const allSlots = [...new Set(normSessions.map(s => s.start))]
+    .sort((a, b) => toMins(a) - toMins(b)); // chronological, not lexicographic
   // Lookup keyed by day|slot|normRoom(room) so spacing/dot variants all match
   const lookup = {};
   normSessions.forEach(s => { lookup[`${s.date}|${s.start}|${normRoom(s.room)}`] = s; });
@@ -297,9 +316,35 @@ function buildSchedule(sessions) {
     dayRooms.forEach(r => { html += `<th class="sg-room">${esc(r)}</th>`; });
     html += `</tr></thead><tbody>`;
     daySlots.forEach(slot => {
+      // Detect if this slot is a break/registration:
+      // IDs starting with R (Registration/Coffee Break) OR
+      // session type contains "break" in any room on this slot
+      const slotSessions = dayRooms.map(r => lookup[`${day}|${slot}|${normRoom(r)}`]).filter(Boolean);
+      const isBreak = slotSessions.length > 0 && slotSessions.every(s =>
+        /^R/i.test(s.id) || /break|registration/i.test(s.title)
+      );
+
+      if (isBreak) {
+        // Thin gold row spanning all columns — no room cells shown
+        const breakLabel = slotSessions[0]?.title || 'Break';
+        html += `<tr class="sg-break-row">
+          <td class="sg-time">${esc(to12h(slot))}</td>
+          <td class="sg-break-cell" colspan="${dayRooms.length}">${esc(breakLabel)}</td>
+        </tr>`;
+        return;
+      }
+
+      // Mothership cutoff: don't show after 17:00 (5 pm)
+      const slotMins = toMins(slot);
+      const showMothership = slotMins < 17 * 60; // before 5:00 pm
+
       html += `<tr><td class="sg-time">${esc(to12h(slot))}</td>`;
       dayRooms.forEach(room => {
         if (normRoom(room) === normRoom(MOTHERSHIP_ROOM)) {
+          if (!showMothership) {
+            html += `<td class="sg-cell"><div class="sg-inner empty"></div></td>`;
+            return;
+          }
           const ms = mothSession || { id: 'I', title: 'Mothership', chair: '' };
           let tip = `<strong>Mothership</strong><div class="tip-meta">${esc(room)}</div>`;
           if (ms.chair) tip += `<div class="tip-meta">Chair: ${esc(ms.chair)}</div>`;
