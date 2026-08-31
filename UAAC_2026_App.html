@@ -59,13 +59,15 @@ img{max-width:100%;display:block}
 .hdr{height:var(--hdr);background:var(--g900);
   display:flex;align-items:center;padding:0 1rem;gap:.7rem;
   border-bottom:2px solid var(--red);flex-shrink:0;z-index:50}
-.hdr-logo{height:22px;width:auto;filter:brightness(0) invert(1)}
+.hdr-text{flex-shrink:0}
+.hdr-title{font-family:var(--serif);font-size:.88rem;font-weight:700;
+  color:var(--white);line-height:1.2}
+.hdr-sub{font-size:.62rem;color:var(--g400);letter-spacing:.02em;margin-top:.08rem}
+.hdr-div{width:1px;height:24px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-logos{display:flex;align-items:center;gap:.6rem;flex:1;justify-content:flex-end}
+.hdr-logo{height:22px;width:auto;filter:brightness(0) invert(1);flex-shrink:0}
 .hdr-logo.conc{height:18px}
-.hdr-div{width:1px;height:20px;background:rgba(255,255,255,.2);flex-shrink:0}
-.hdr-text{flex:1;min-width:0}
-.hdr-title{font-family:var(--serif);font-size:.8rem;font-weight:700;
-  color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hdr-sub{font-size:.58rem;color:var(--g400);letter-spacing:.03em;margin-top:.05rem}
+.hdr-logo-div{width:1px;height:20px;background:rgba(255,255,255,.2);flex-shrink:0}
 
 /* Bottom tabs — 3 tabs */
 .bottom-tabs{height:var(--tabs);background:var(--g900);
@@ -381,16 +383,19 @@ img{max-width:100%;display:block}
 <div id="app">
 
   <header class="hdr">
-    <img class="hdr-logo"
-      src="https://uaac-aauc.com/wp-content/uploads/UAAC_Logo.png"
-      alt="UAAC–AAUC" onerror="this.style.display='none'">
-    <div class="hdr-div"></div>
-    <img class="hdr-logo conc"
-      src="https://www.concordia.ca/etc/designs/concordia/clientlibs/img/logo-concordia-university-montreal.svg"
-      alt="Concordia" onerror="this.style.display='none'">
     <div class="hdr-text">
       <div class="hdr-title">Conference</div>
-      <div class="hdr-sub">October 13–15, 2026 · Montréal</div>
+      <div class="hdr-sub">October 13–15, 2026</div>
+    </div>
+    <div class="hdr-div"></div>
+    <div class="hdr-logos">
+      <img class="hdr-logo"
+        src="https://uaac-aauc.com/wp-content/uploads/UAAC_Logo.png"
+        alt="UAAC–AAUC" onerror="this.style.display='none'">
+      <div class="hdr-logo-div"></div>
+      <img class="hdr-logo conc"
+        src="https://www.concordia.ca/etc/designs/concordia/clientlibs/img/logo-concordia-university-montreal.svg"
+        alt="Concordia" onerror="this.style.display='none'">
     </div>
   </header>
 
@@ -483,8 +488,8 @@ img{max-width:100%;display:block}
                    alt="Goose Lane" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
             </div>
             <div class="pub-logo-box">
-              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/URP.webp"
-                   alt="University of Regina Press" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/mqup.webp"
+                   alt="McGill-Queen's University Press" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
             </div>
           </div>
         </div>
