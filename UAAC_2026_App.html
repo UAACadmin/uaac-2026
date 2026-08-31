@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111111">
+<title>UAAC–AAUC 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --red:     #C0392B; --red-d:#922B21; --red-l:#FADBD8; --red-xl:#FDF2F0;
+  --gold:    #8A6914; --gold-l:#F6EDD3; --gold-f:#FBF8EE;
+  --green:   #1E8449; --green-xl:#EAFAF1;
+  --blue:    #2471A3; --blue-l:#D6EAF8; --blue-xl:#EBF5FB;
+  --neutral: #566573; --neut-xl:#F2F3F4;
+  --g900:#111; --g800:#2A2A2A; --g600:#4A4A4A; --g400:#888;
+  --g200:#DDD; --g100:#F0F0F0; --g50:#F8F7F5; --white:#FFF;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --radius:10px; --hdr:52px; --tabs:48px; --tr:.17s ease;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;height:100%}
+body{font-family:var(--sans);font-size:.9375rem;line-height:1.6;
+  color:var(--g600);background:var(--g50);
+  height:100%;overflow:hidden;display:flex;flex-direction:column}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit;border:none;outline:none}
+a{color:inherit;text-decoration:none}
+p{margin-bottom:.5em}p:last-child{margin-bottom:0}
+img{max-width:100%;display:block}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--g900);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:1.2rem;z-index:9999}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:var(--red);border-radius:50%;
+  animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{color:rgba(255,255,255,.5);font-size:.8rem;letter-spacing:.04em}
+#loading .logo-text{font-family:var(--serif);font-size:1.1rem;color:var(--white)}
+
+/* Error */
+#error-msg{display:none;position:fixed;inset:0;background:var(--g900);
+  align-items:center;justify-content:center;flex-direction:column;
+  gap:.8rem;padding:2rem;z-index:9998;text-align:center}
+#error-msg p{color:rgba(255,255,255,.6);font-size:.82rem;max-width:320px;line-height:1.6}
+#error-msg h3{color:var(--white);font-size:1rem}
+
+/* App shell */
+#app{display:none;flex-direction:column;height:100%;overflow:hidden}
+
+/* Header */
+.hdr{height:var(--hdr);background:var(--g900);
+  display:flex;align-items:center;padding:0 1rem;gap:.7rem;
+  border-bottom:2px solid var(--red);flex-shrink:0;z-index:50}
+.hdr-logo{height:22px;width:auto;filter:brightness(0) invert(1)}
+.hdr-logo.conc{height:18px}
+.hdr-div{width:1px;height:20px;background:rgba(255,255,255,.2);flex-shrink:0}
+.hdr-text{flex:1;min-width:0}
+.hdr-title{font-family:var(--serif);font-size:.8rem;font-weight:700;
+  color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-sub{font-size:.58rem;color:var(--g400);letter-spacing:.03em;margin-top:.05rem}
+
+/* Bottom tabs — 3 tabs */
+.bottom-tabs{height:var(--tabs);background:var(--g900);
+  display:flex;border-top:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;z-index:50}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;color:rgba(255,255,255,.72);
+  font-size:.58rem;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;transition:color var(--tr),border-color var(--tr);
+  border-top:2px solid transparent;padding-top:2px}
+.btab svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;
+  fill:none;stroke-linecap:round;stroke-linejoin:round}
+.btab.active{color:var(--red);border-top-color:var(--red)}
+
+/* Views */
+.view{display:none;flex:1;flex-direction:column;overflow:hidden}
+.view.active{display:flex}
+.scroll-area{flex:1;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch}
+
+/* Day strip */
+.day-strip{display:flex;gap:.35rem;padding:.5rem .75rem .38rem;
+  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+  background:var(--white);border-bottom:1px solid var(--g200)}
+.day-strip::-webkit-scrollbar{display:none}
+.day-chip{flex-shrink:0;padding:.26rem .72rem;border-radius:20px;
+  font-size:.68rem;font-weight:600;border:1px solid var(--g200);
+  color:var(--g400);background:var(--white);white-space:nowrap;
+  transition:all var(--tr)}
+.day-chip.active{background:var(--red);border-color:var(--red);color:var(--white)}
+.day-chip:hover:not(.active){border-color:var(--g600);color:var(--g800)}
+.day-chip.sat-chip{border-style:dashed}
+.day-chip.sat-chip.active{border-style:solid}
+
+/* ── SESSIONS view ── */
+#view-sessions .filter-bar{
+  padding:.45rem .75rem;background:var(--white);
+  border-bottom:1px solid var(--g200);
+  display:flex;gap:.4rem;align-items:center;flex-shrink:0}
+.search-wrap{flex:1;position:relative}
+.search-wrap svg{position:absolute;left:.52rem;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;stroke:var(--g400);stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.search-inp{width:100%;padding:.36rem .52rem .36rem 1.75rem;
+  border:1px solid var(--g200);border-radius:var(--radius);
+  font-size:.8rem;color:var(--g800);background:var(--g50);
+  transition:border-color var(--tr)}
+.search-inp:focus{border-color:var(--red);background:var(--white)}
+.search-inp::placeholder{color:var(--g400)}
+
+.flt-btn{display:flex;align-items:center;gap:.24rem;
+  padding:.36rem .62rem;border:1px solid var(--g200);
+  border-radius:var(--radius);font-size:.7rem;font-weight:600;
+  color:var(--g600);background:var(--g50);white-space:nowrap;
+  transition:all var(--tr)}
+.flt-btn svg{width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.flt-btn.active{border-color:var(--red);color:var(--red);background:var(--red-xl)}
+.flt-cnt{display:inline-flex;align-items:center;justify-content:center;
+  background:var(--red);color:var(--white);border-radius:50%;
+  width:14px;height:14px;font-size:.55rem;font-weight:700}
+
+.flt-panel{background:var(--white);border-bottom:1px solid var(--g200);
+  max-height:0;overflow:hidden;transition:max-height .22s ease,padding .22s ease;
+  flex-shrink:0}
+.flt-panel.open{max-height:280px;padding:.52rem .75rem}
+.fg-label{font-size:.57rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--g400);margin-bottom:.28rem}
+.fg-chips{display:flex;flex-wrap:wrap;gap:.26rem;margin-bottom:.45rem}
+.chip{padding:.22rem .55rem;border-radius:20px;font-size:.67rem;font-weight:500;
+  border:1px solid var(--g200);color:var(--g600);background:var(--g50);
+  cursor:pointer;transition:all var(--tr)}
+.chip.active{background:var(--red);border-color:var(--red);color:var(--white)}
+.chip:hover:not(.active){border-color:var(--g600)}
+.clear-flt{font-size:.68rem;color:var(--red);font-weight:600;
+  cursor:pointer;display:none}
+.clear-flt.show{display:inline}
+
+#view-sessions .scroll-area{padding:.6rem .75rem 3rem}
+
+/* Slot header */
+.slot-hdr{font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--g800);
+  padding:.62rem .05rem .26rem;
+  display:flex;align-items:center;gap:.4rem}
+.slot-hdr::after{content:'';flex:1;height:1px;background:var(--g200)}
+
+/* ── Session card ── */
+.s-card{background:var(--white);border-radius:var(--radius);
+  border:1px solid var(--g200);margin-bottom:.48rem;overflow:hidden;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);transition:box-shadow var(--tr)}
+.s-card:hover{box-shadow:0 3px 12px rgba(0,0,0,.1)}
+
+/* Card header strip */
+.card-strip{padding:.55rem .85rem .42rem;display:flex;
+  flex-direction:column;gap:.18rem}
+.card-strip.type-panel      {background:#C0392B}
+.card-strip.type-roundtable {background:#7B3535}
+.card-strip.type-workshop   {background:#7B1B38}
+.card-strip.type-break      {background:#1E8449;padding:.4rem .85rem}
+.card-strip.type-event      {background:#2E1B7B}
+
+/* Top row: type badge LEFT, time+room RIGHT */
+.strip-top{display:flex;align-items:flex-start;
+  justify-content:space-between;gap:.5rem;margin-bottom:.15rem}
+.strip-type{font-size:.52rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.6);flex-shrink:0;
+  padding-top:.08rem}
+.strip-time-loc{display:flex;flex-direction:column;align-items:flex-end;
+  gap:.05rem;flex-shrink:0}
+.strip-time{font-size:.65rem;font-weight:700;color:var(--white);
+  letter-spacing:.02em}
+.strip-room{font-size:.62rem;color:rgba(255,255,255,.8);
+  display:flex;align-items:center;gap:.18rem;justify-content:flex-end}
+.strip-room svg{width:9px;height:9px;stroke:currentColor;
+  stroke-width:2;fill:none;flex-shrink:0}
+
+/* Title row */
+.strip-title-row{display:flex;align-items:baseline;gap:.38rem;flex-wrap:wrap}
+.strip-id{font-size:.62rem;font-weight:800;color:var(--white);
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
+  border-radius:3px;padding:.03rem .3rem;letter-spacing:.05em;flex-shrink:0}
+.strip-title{font-family:var(--serif);font-size:.95rem;font-weight:700;
+  color:var(--white);line-height:1.22;flex:1}
+.strip-title.break-t{font-family:var(--sans);font-size:.82rem;font-weight:600}
+
+.strip-chair{font-size:.67rem;color:rgba(255,255,255,.78);margin-top:.06rem}
+.strip-chair strong{color:rgba(255,255,255,.95);font-weight:600}
+
+/* Card toggle */
+.card-toggle{width:100%;padding:.4rem .85rem;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.7rem;font-weight:600;color:var(--red);
+  background:var(--white);border-top:1px solid var(--g100);
+  transition:background var(--tr)}
+.card-toggle:hover{background:var(--red-xl)}
+.card-toggle svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.5;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform var(--tr);flex-shrink:0}
+.card-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+
+/* Card body */
+.card-body{overflow:hidden}
+.card-body.collapsed{display:none}
+.card-inner{padding:.65rem .85rem;display:flex;flex-direction:column;gap:.6rem}
+
+.f-label{display:block;font-size:.54rem;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--gold);margin-bottom:.16rem}
+.card-rule{border:none;border-top:1px solid var(--g100);margin:.06rem 0}
+.kw-text{font-size:.72rem;font-style:italic;color:var(--g400)}
+
+/* Person */
+.person-role{font-size:.52rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:.08rem}
+.person-name{font-family:var(--serif);font-size:.9rem;font-weight:700;
+  color:var(--g900);line-height:1.2}
+.person-name.pres{font-size:.83rem;color:var(--g800)}
+.person-affil{font-size:.7rem;font-style:italic;color:var(--g400);margin-top:.04rem}
+.chairs-grid{display:grid;grid-template-columns:1fr;gap:.45rem}
+@media(min-width:480px){.chairs-grid{grid-template-columns:1fr 1fr}}
+
+/* Expand buttons */
+.xbtn{display:inline-flex;align-items:center;gap:.18rem;
+  border-radius:3px;padding:.1rem .34rem;font-size:.54rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
+  transition:all var(--tr);line-height:1.5;margin-top:.16rem}
+.xbtn.gold{border:1px solid var(--gold);color:var(--gold)}
+.xbtn.gold:hover{background:var(--gold-l)}
+.xbtn.gold[aria-expanded="true"]{background:var(--gold);color:var(--white)}
+.xbtn.red{border:1px solid var(--red);color:var(--red)}
+.xbtn.red:hover{background:var(--red-xl)}
+.xbtn.red[aria-expanded="true"]{background:var(--red);color:var(--white)}
+.xbtn svg{width:8px;height:8px;stroke:currentColor;stroke-width:2.5;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform var(--tr)}
+.xbtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.xpanel{margin-top:.22rem;padding:.4rem .62rem;border-radius:0 4px 4px 4px;
+  font-size:.77rem;line-height:1.65;color:var(--g600);animation:sld .15s ease}
+.xpanel.gold-p{background:var(--gold-f);border-left:3px solid var(--gold)}
+.xpanel.red-p{background:var(--red-xl);border-left:3px solid var(--red)}
+.xpanel[hidden]{display:none}
+@keyframes sld{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+
+/* Presenter */
+.pres-block{padding:.44rem 0;border-bottom:1px dashed var(--g200)}
+.pres-block:last-child{border-bottom:none;padding-bottom:0}
+.pres-paper{font-family:var(--serif);font-size:.83rem;font-style:normal;
+  color:var(--red-d);margin:.2rem 0 .14rem;line-height:1.3}
+.pres-kw{font-size:.66rem;color:var(--g400);font-style:italic;margin-top:.1rem}
+
+/* No results */
+.empty{text-align:center;padding:2.5rem 1.5rem;color:var(--g400);
+  font-size:.84rem;line-height:1.6}
+.empty svg{width:32px;height:32px;stroke:var(--g200);stroke-width:1.5;
+  fill:none;margin:0 auto .7rem;display:block}
+
+/* ── SPEAKERS view ── */
+#view-speakers .spk-toolbar{
+  padding:.45rem .75rem;background:var(--white);
+  border-bottom:1px solid var(--g200);
+  display:flex;flex-direction:column;gap:.38rem;flex-shrink:0}
+.spk-search-wrap{position:relative}
+.spk-search-wrap svg{position:absolute;left:.52rem;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;stroke:var(--g400);stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.spk-search-inp{width:100%;padding:.36rem .52rem .36rem 1.75rem;
+  border:1px solid var(--g200);border-radius:var(--radius);
+  font-size:.8rem;color:var(--g800);background:var(--g50);
+  transition:border-color var(--tr)}
+.spk-search-inp:focus{border-color:var(--red);background:var(--white)}
+.spk-search-inp::placeholder{color:var(--g400)}
+.alpha-row{display:flex;gap:.22rem;overflow-x:auto;
+  scrollbar-width:none;padding-bottom:2px}
+.alpha-row::-webkit-scrollbar{display:none}
+.alpha-pill{flex-shrink:0;width:25px;height:23px;display:flex;align-items:center;
+  justify-content:center;border-radius:4px;font-size:.67rem;font-weight:700;
+  border:1px solid var(--g200);color:var(--g400);cursor:pointer;
+  transition:all var(--tr)}
+.alpha-pill.active{background:var(--red);border-color:var(--red);color:var(--white)}
+.alpha-pill:hover:not(.active):not(.disabled){border-color:var(--g600);color:var(--g800)}
+.alpha-pill.disabled{opacity:.28;pointer-events:none}
+
+#view-speakers .scroll-area{padding:.55rem .75rem 3rem}
+.spk-letter-group{margin-bottom:.75rem}
+.spk-letter{font-size:.6rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--g400);
+  padding:.42rem .05rem .18rem;
+  display:flex;align-items:center;gap:.4rem}
+.spk-letter::after{content:'';flex:1;height:1px;background:var(--g200)}
+
+.spk-card{background:var(--white);border:1px solid var(--g200);
+  border-radius:8px;padding:.52rem .72rem;margin-bottom:.35rem;
+  box-shadow:0 1px 4px rgba(0,0,0,.05);cursor:pointer;
+  transition:box-shadow var(--tr)}
+.spk-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.09)}
+.spk-card:last-child{margin-bottom:0}
+.spk-name{font-family:var(--serif);font-size:.9rem;font-weight:700;
+  color:var(--g900);line-height:1.2}
+.spk-affil{font-size:.7rem;font-style:italic;color:var(--g400);margin-top:.05rem}
+.spk-session{font-size:.67rem;color:var(--red);margin-top:.25rem;
+  display:flex;align-items:center;gap:.28rem;font-weight:500}
+.spk-session svg{width:10px;height:10px;stroke:currentColor;
+  stroke-width:2;fill:none;flex-shrink:0}
+.role-badge{display:inline-block;font-size:.5rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;padding:.05rem .3rem;
+  border-radius:3px;margin-left:.28rem}
+.role-badge.chair{background:var(--red-l);color:var(--red-d)}
+.role-badge.presenter{background:var(--neut-xl);color:var(--neutral)}
+.spk-bio-area{margin-top:.32rem;padding:.36rem .58rem;
+  background:var(--gold-f);border-left:3px solid var(--gold);
+  border-radius:0 4px 4px 4px;font-size:.76rem;line-height:1.62;
+  color:var(--g600);display:none}
+.spk-bio-area.open{display:block}
+
+/* ── INFO view ── */
+#view-info .scroll-area{padding:.7rem .75rem 3rem;
+  display:flex;flex-direction:column;gap:1.1rem}
+.info-section{background:var(--white);border:1px solid var(--g200);
+  border-radius:var(--radius);overflow:visible;
+  box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.info-head{background:var(--g900);padding:.5rem .88rem;
+  display:flex;align-items:center;gap:.45rem}
+.info-head svg{width:15px;height:15px;stroke:rgba(255,255,255,.7);
+  stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.info-head-title{font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--white)}
+
+/* ── INFO gallery ── */
+.gallery-body{padding:.65rem .88rem}
+.img-placeholder{background:var(--g100);border-radius:8px;
+  min-height:120px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.45rem;
+  color:var(--g400);font-size:.78rem;text-align:center;padding:1.4rem;
+  border:1px dashed var(--g200)}
+.img-placeholder svg{width:28px;height:28px;stroke:var(--g200);
+  stroke-width:1.5;fill:none}
+.gallery-img{width:100%;border-radius:8px;display:block;margin-bottom:.6rem}
+.gallery-img:last-child{margin-bottom:0}
+.gallery-caption{font-size:.72rem;color:var(--g400);text-align:center;
+  margin-top:-.4rem;margin-bottom:.6rem}
+
+/* Publishers logos */
+.pub-logos{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;padding:.3rem 0}
+.pub-logo{width:100%;height:64px;object-fit:contain;object-position:center;
+  display:block;border-radius:4px}
+@media(min-width:480px){.pub-logos{grid-template-columns:repeat(3,1fr)}}
+
+/* Sponsors */
+.sponsor-area{padding:.65rem .88rem}
+.sponsor-logos{display:flex;flex-wrap:wrap;gap:1.2rem;
+  align-items:center;justify-content:flex-start;padding:.3rem 0}
+.sponsor-logo{height:48px;width:auto;max-width:140px;
+  object-fit:contain;display:block}
+
+
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="logo-text">UAAC – AAUC 2026</div>
+  <p>Loading programme…</p>
+</div>
+
+<div id="error-msg">
+  <h3>Could not load programme</h3>
+  <p id="error-detail">Please ensure the page is served over HTTP, not opened as a local file.</p>
+</div>
+
+<div id="app">
+
+  <header class="hdr">
+    <img class="hdr-logo"
+      src="https://uaac-aauc.com/wp-content/uploads/UAAC_Logo.png"
+      alt="UAAC–AAUC" onerror="this.style.display='none'">
+    <div class="hdr-div"></div>
+    <img class="hdr-logo conc"
+      src="https://www.concordia.ca/etc/designs/concordia/clientlibs/img/logo-concordia-university-montreal.svg"
+      alt="Concordia" onerror="this.style.display='none'">
+    <div class="hdr-text">
+      <div class="hdr-title">Conference</div>
+      <div class="hdr-sub">October 13–15, 2026 · Montréal</div>
+    </div>
+  </header>
+
+  <!-- ══ SESSIONS VIEW ══ -->
+  <div class="view active" id="view-sessions" role="tabpanel">
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input class="search-inp" id="sess-search" type="search"
+          placeholder="Search sessions or presenters…"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="flt-btn" id="flt-toggle" aria-expanded="false">
+        <svg viewBox="0 0 16 16"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+        Filter
+        <span class="flt-cnt" id="flt-cnt" style="display:none">0</span>
+      </button>
+    </div>
+    <div class="flt-panel" id="flt-panel" aria-hidden="true">
+      <div class="fg-label">Session type</div>
+      <div class="fg-chips" id="type-chips"></div>
+      <div class="fg-label">Room</div>
+      <div class="fg-chips" id="room-chips"></div>
+      <span class="clear-flt" id="clear-flt">✕ Clear all</span>
+    </div>
+    <div class="day-strip" id="sess-day-strip"></div>
+    <div class="scroll-area">
+      <div id="sessions-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ SPEAKERS VIEW ══ -->
+  <div class="view" id="view-speakers" role="tabpanel">
+    <div class="spk-toolbar">
+      <div class="spk-search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input class="spk-search-inp" id="spk-search" type="search"
+          placeholder="Search by name or institution…"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="alpha-row" id="alpha-row"></div>
+    </div>
+    <div class="scroll-area" id="spk-scroll"></div>
+  </div>
+
+  <!-- ══ INFO VIEW ══ -->
+  <div class="view" id="view-info" role="tabpanel">
+    <div class="scroll-area">
+
+      <!-- Campus Maps -->
+      <div class="info-section" style="margin:.7rem .75rem 0">
+        <div class="info-head">
+          <svg viewBox="0 0 16 16"><path d="M8 14s-5-4.686-5-8a5 5 0 0110 0c0 3.314-5 8-5 8z"/><circle cx="8" cy="6" r="1.5"/></svg>
+          <span class="info-head-title">Campus maps</span>
+        </div>
+        <div class="gallery-body" id="gallery-maps">
+          <div class="img-placeholder">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <span>EV Building floor plans coming soon</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publishers' tables -->
+      <div class="info-section" style="margin:.7rem .75rem 0">
+        <div class="info-head">
+          <svg viewBox="0 0 16 16"><path d="M2 3h12v10H2zM6 3v10M2 7h12"/></svg>
+          <span class="info-head-title">Publishers' tables</span>
+        </div>
+        <div class="gallery-body" id="gallery-publishers">
+          <div class="pub-logos">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/AGO.webp"
+                 alt="Art Gallery of Ontario" class="pub-logo"
+                 onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/artexte.webp"
+                 alt="Artexte" class="pub-logo"
+                 onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/concordia-up.webp"
+                 alt="Concordia University Press" class="pub-logo"
+                 onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/esse.webp"
+                 alt="esse" class="pub-logo"
+                 onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/GooseLane.avif"
+                 alt="Goose Lane" class="pub-logo"
+                 onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/URP.webp"
+                 alt="University of Regina Press" class="pub-logo"
+                 onerror="this.style.display='none'">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sponsors & partners -->
+      <div class="info-section" style="margin:.7rem .75rem 1rem">
+        <div class="info-head">
+          <svg viewBox="0 0 16 16"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.2l-3.7 2.1.7-4.1-3-2.9 4.2-.7z"/></svg>
+          <span class="info-head-title">Sponsors &amp; partners</span>
+        </div>
+        <div class="gallery-body sponsor-area">
+          <div class="sponsor-logos" id="sponsor-logos">
+            <div class="sponsor-logo-wrap">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/MBAM%20noir.png"
+                   alt="MBAM" class="sponsor-logo"
+                   onerror="this.style.display='none';document.getElementById('sponsor-fallback').style.display='block'">
+            </div>
+          </div>
+          <div class="img-placeholder" id="sponsor-fallback" style="display:none">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>Sponsor logos coming soon</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom tabs — 3 tabs -->
+  <nav class="bottom-tabs" role="tablist">
+    <button class="btab active" data-view="sessions" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      Sessions
+    </button>
+    <button class="btab" data-view="speakers" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.85"/></svg>
+      Speakers
+    </button>
+    <button class="btab" data-view="info" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Info
+    </button>
+  </nav>
+
+</div>
+
+<script>
+/* ── CONFIG ── */
+const SHEET_ID = '1P2M1x2-N-lW1W1-ur4SP0UZ9IMTlvYQYLQ-QraGRAXo';
+const API_KEY  = 'AIzaSyD69jg-Vo2u9DGhKLk1OFiHPY6JXCc38Oc';
+const EXCLUDE_LOC = ['N/A','#N/A',''];
+const ROOM_ORDER = [
+  'EV1.605','EV3.711','EV7.745','EV1.615','EV6.735',
+  '4th Space','EV3.760','EV7.735','EV5.775 junction',
+  'CCA','ER-672','VA 215 Curatorial Lab'
+];
+
+/* ── FETCH ── */
+async function fetchTab(tab) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(tab)}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Sheets API ${res.status} for "${tab}"`);
+  return (await res.json()).values || [];
+}
+
+/* ── PARSE SESSIONS ── */
+function parseSessions(rows) {
+  if (rows.length < 2) return [];
+  const hdr = rows[0].map(h => h.trim());
+  const col = name => {
+    let i = hdr.indexOf(name);
+    if (i < 0) i = hdr.findIndex(h => h.replace(/\s+$/,'') === name.replace(/\s+$/,''));
+    return i;
+  };
+  const C = {
+    type:col('Type of session'), title:col('Session Title'), id:col('ID'),
+    loc:col('Location'), date:col('Date'), start:col('Start Time'), end:col('End Time'),
+    chair:col('Chair'), desc:col('Session Description'), kw:col('Session Keywords'),
+    chairAff:col('Chair Affiliation'), chairBio:col('Chair Bio'),
+    coChair:col('Co-chair'), coChairAff:col('Co-chair Affiliation'), coChairBio:col('Co-chair Bio'),
+  };
+  const PAN = [];
+  for (let n=1;n<=7;n++) PAN.push({
+    name:col(`Panelist ${n}`), affil:col(`Panelist ${n} Affiliation`),
+    bio:col(`Panelist ${n} Bio`), paper:col(`Panelist ${n} Paper`),
+    desc:col(`Panelist ${n} Description`), kw:col(`Panelist ${n} Keywords`),
+  });
+  const g = (row,i) => (i>=0 && row[i]!=null ? String(row[i]).trim() : '');
+
+  function parseTime(t) {
+    if (!t) return '';
+    const m = t.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|AM|PM)?/i);
+    if (!m) return t;
+    let h=parseInt(m[1]); const min=m[2];
+    const mer=m[3]?m[3].toLowerCase():(h<8?'pm':'am');
+    if(mer==='pm'&&h!==12)h+=12; if(mer==='am'&&h===12)h=0;
+    return (h%12||12)+':'+min+' '+(h<12?'am':'pm');
+  }
+  function parseDate(d) {
+    if (!d) return null;
+    const mo=['january','february','march','april','may','june',
+              'july','august','september','october','november','december'];
+    const m=d.trim().match(/([A-Za-z]+)\s+(\d{1,2})[,\s]+(\d{4})/);
+    if(m){const mi=mo.indexOf(m[1].toLowerCase());
+          if(mi>=0)return new Date(parseInt(m[3]),mi,parseInt(m[2]));}
+    const dt=new Date(d); return isNaN(dt)?null:dt;
+  }
+  const DAY=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MON=['January','February','March','April','May','June','July',
+             'August','September','October','November','December'];
+  const fmtDate=d=>{if(!d)return'';const dt=parseDate(d);if(!dt)return d;
+    return`${DAY[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`};
+  const sortKey=d=>{const dt=parseDate(d);return dt?dt.getTime():0};
+  const timeToMin=t=>{const m=t.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);if(!m)return 0;
+    let h=parseInt(m[1]);const min=parseInt(m[2]),mer=m[3].toLowerCase();
+    if(mer==='pm'&&h!==12)h+=12;if(mer==='am'&&h===12)h=0;return h*60+min};
+  const isBreak=type=>(type||'').toLowerCase().trim()==='break';
+
+  const sessions=[];
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const id=g(row,C.id); if(!id) continue;
+    const type=g(row,C.type);
+    const brk=isBreak(type);
+    const loc=g(row,C.loc);
+    if(!brk && EXCLUDE_LOC.includes(loc)) continue;
+    const startLabel=parseTime(g(row,C.start));
+    const endLabel=parseTime(g(row,C.end));
+    const panelists=PAN.map(p=>({
+      name:g(row,p.name),affil:g(row,p.affil),bio:g(row,p.bio),
+      paper:g(row,p.paper),desc:g(row,p.desc),kw:g(row,p.kw),
+    })).filter(p=>p.name);
+    sessions.push({
+      type,title:g(row,C.title),id,loc,
+      dateRaw:g(row,C.date),
+      dateLabel:fmtDate(g(row,C.date)),
+      dateSortKey:sortKey(g(row,C.date)),
+      startLabel,endLabel,
+      startMin:timeToMin(startLabel),
+      endMin:timeToMin(endLabel),
+      chair:g(row,C.chair),desc:g(row,C.desc),kw:g(row,C.kw),
+      chairAff:g(row,C.chairAff),chairBio:g(row,C.chairBio),
+      coChair:g(row,C.coChair),coChairAff:g(row,C.coChairAff),coChairBio:g(row,C.coChairBio),
+      panelists,isBreak:brk,
+      isSatellite:id.startsWith('S'),
+      isMothership:id.startsWith('I'),
+    });
+  }
+  return sessions;
+}
+
+/* ── PARSE EVENTS ── */
+function parseEvents(rows) {
+  if (rows.length < 2) return [];
+  const hdr=rows[0].map(h=>h.trim());
+  // Case-insensitive, trims trailing spaces
+  const col=name=>{
+    const n=name.toLowerCase().replace(/\s+$/,'');
+    return hdr.findIndex(h=>h.toLowerCase().replace(/\s+$/,'')=== n);
+  };
+  // Sheet columns: Title | Details | Location | Date | Start Time | End Time
+  const C={
+    title:  col('title'),
+    details:col('details'),   // col B — used for both badge and expandable text
+    loc:    col('location'),
+    date:   col('date'),
+    start:  col('start time'),
+    end:    col('end time'),
+  };
+  const g=(row,i)=>(i>=0&&row[i]!=null?String(row[i]).trim():'');
+  function parseTime(t){if(!t)return'';
+    const m=t.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|AM|PM)?/i);if(!m)return t;
+    let h=parseInt(m[1]);const min=m[2],mer=m[3]?m[3].toLowerCase():(h<8?'pm':'am');
+    if(mer==='pm'&&h!==12)h+=12;if(mer==='am'&&h===12)h=0;
+    return(h%12||12)+':'+min+' '+(h<12?'am':'pm');}
+  function parseDate(d){if(!d)return null;
+    const mo=['january','february','march','april','may','june',
+              'july','august','september','october','november','december'];
+    const m=d.trim().match(/([A-Za-z]+)\s+(\d{1,2})[,\s]+(\d{4})/);
+    if(m){const mi=mo.indexOf(m[1].toLowerCase());
+          if(mi>=0)return new Date(parseInt(m[3]),mi,parseInt(m[2]));}
+    const dt=new Date(d);return isNaN(dt)?null:dt;}
+  const DAY=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MON=['January','February','March','April','May','June','July',
+             'August','September','October','November','December'];
+  const fmtDate=d=>{if(!d)return'';const dt=parseDate(d);if(!dt)return d;
+    return`${DAY[dt.getDay()]}, ${MON[dt.getMonth()]} ${dt.getDate()}`};
+  const sortKey=d=>{const dt=parseDate(d);return dt?dt.getTime():0};
+  const timeToMin=t=>{const m=t.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);if(!m)return 0;
+    let h=parseInt(m[1]);const min=parseInt(m[2]),mer=m[3].toLowerCase();
+    if(mer==='pm'&&h!==12)h+=12;if(mer==='am'&&h===12)h=0;return h*60+min};
+  const events=[];
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const title=g(row,C.title);if(!title)continue;
+    const startLabel=parseTime(g(row,C.start));
+    const details=g(row,C.details);
+    events.push({
+      title,
+      details,            // col B — shown as collapsible toggle
+      loc:g(row,C.loc),
+      dateLabel:fmtDate(g(row,C.date)),
+      dateSortKey:sortKey(g(row,C.date)),
+      startLabel,
+      endLabel:parseTime(g(row,C.end)),
+      startMin:timeToMin(startLabel),
+    });
+  }
+  events.sort((a,b)=>a.dateSortKey-b.dateSortKey||a.startMin-b.startMin);
+  return events;
+}
+
+/* ── STATE ── */
+let ALL_SESSIONS=[];
+let sessDay=null, spkLetter=null;
+let sessSearch='', spkSearch='';
+let activeTypes=new Set(), activeRooms=new Set();
+
+/* ── HELPERS ── */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8);
+const chev=()=>`<svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg>`;
+
+function typeClass(type){
+  const t=(type||'').toLowerCase().trim();
+  if(t==='break')      return 'type-break';
+  if(t==='roundtable') return 'type-roundtable';
+  if(t==='workshop')   return 'type-workshop';
+  if(t==='event')      return 'type-event';
+  return 'type-panel'; // Panel, and any unrecognised type
+}
+
+/* ── TOGGLE FUNCTIONS (never remove) ── */
+function toggleExpand(btn,panelId){
+  const p=document.getElementById(panelId);if(!p)return;
+  const open=btn.getAttribute('aria-expanded')==='true';
+  btn.setAttribute('aria-expanded',String(!open));
+  p.hidden=open;
+}
+function toggleCard(btn,bodyId){
+  const b=document.getElementById(bodyId);if(!b)return;
+  const open=btn.getAttribute('aria-expanded')==='true';
+  btn.setAttribute('aria-expanded',String(!open));
+  b.classList.toggle('collapsed',open);
+  btn.querySelector('span').textContent=open?'View details':'Hide details';
+}
+function toggleSpkBio(card){
+  card.querySelector('.spk-bio-area')?.classList.toggle('open');
+}
+
+/* ── CARD RENDERING ── */
+function renderPerson(name,affil,bio,role){
+  const bioId='b-'+uid();
+  return`<div>
+    <div class="person-role">${esc(role)}</div>
+    <div class="person-name">${esc(name)}</div>
+    ${affil?`<div class="person-affil">${esc(affil)}</div>`:''}
+    ${bio?`<button class="xbtn gold" aria-expanded="false"
+        onclick="toggleExpand(this,'${bioId}')">Bio ${chev()}</button>
+      <div class="xpanel gold-p" id="${bioId}" hidden><p>${esc(bio)}</p></div>`:''}
+  </div>`;
+}
+function renderPresenter(p){
+  const bioId='pb-'+uid(),descId='pd-'+uid();
+  return`<div class="pres-block">
+    <div class="person-name pres">${esc(p.name)}</div>
+    ${p.affil?`<div class="person-affil">${esc(p.affil)}</div>`:''}
+    ${p.paper?`<div class="pres-paper">${esc(p.paper)}</div>`:''}
+    ${p.desc?`<button class="xbtn red" aria-expanded="false"
+        onclick="toggleExpand(this,'${descId}')">Abstract ${chev()}</button>
+      <div class="xpanel red-p" id="${descId}" hidden><p>${esc(p.desc)}</p></div>`:''}
+    ${p.bio?`<button class="xbtn gold" aria-expanded="false"
+        onclick="toggleExpand(this,'${bioId}')">Bio ${chev()}</button>
+      <div class="xpanel gold-p" id="${bioId}" hidden><p>${esc(p.bio)}</p></div>`:''}
+    ${p.kw?`<div class="pres-kw">${esc(p.kw)}</div>`:''}
+  </div>`;
+}
+
+function renderBreakCard(s){
+  const timeStr=s.startLabel&&s.endLabel?`${s.startLabel} – ${s.endLabel}`:(s.startLabel||'');
+  return`<div class="s-card">
+    <div class="card-strip type-break">
+      <div class="strip-top">
+        <span class="strip-type">Break</span>
+        ${timeStr?`<div class="strip-time-loc">
+          <span class="strip-time">${esc(timeStr)}</span>
+          ${s.loc?`<span class="strip-room">
+            <svg viewBox="0 0 16 16"><path d="M8 14s-5-4.686-5-8a5 5 0 0110 0c0 3.314-5 8-5 8z"/><circle cx="8" cy="6" r="1.5"/></svg>
+            ${esc(s.loc)}</span>`:''}
+        </div>`:''}
+      </div>
+      <div class="strip-title-row">
+        <span class="strip-id">${esc(s.id)}</span>
+        <span class="strip-title break-t">${esc(s.title)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSessionCard(s){
+  const bodyId='cb-'+uid();
+  const tc=typeClass(s.type);
+  const timeStr=s.startLabel&&s.endLabel?`${s.startLabel} – ${s.endLabel}`:(s.startLabel||'');
+  const chairHtml=s.chair?renderPerson(s.chair,s.chairAff,s.chairBio,'Chair / Président(e)'):'';
+  const coChairHtml=s.coChair?renderPerson(s.coChair,s.coChairAff,s.coChairBio,'Co-Chair'):'';
+  const hasChairs=chairHtml||coChairHtml;
+  const descId='sd-'+uid();
+  const descBlock=s.desc?`<div>
+    <span class="f-label">Session description</span>
+    <button class="xbtn red" aria-expanded="false"
+        onclick="toggleExpand(this,'${descId}')">Description ${chev()}</button>
+    <div class="xpanel red-p" id="${descId}" hidden><p>${esc(s.desc)}</p></div>
+  </div>`:'';
+  const kwBlock=s.kw?`<div><span class="f-label">Keywords</span>
+    <span class="kw-text">${esc(s.kw)}</span></div>`:'';
+  const presBlock=s.panelists.length?`<div>
+    <span class="f-label">Presentations</span>
+    ${s.panelists.map(renderPresenter).join('')}
+  </div>`:'';
+
+  return`<article class="s-card" id="session-${esc(s.id)}">
+    <div class="card-strip ${tc}">
+      <div class="strip-top">
+        <span class="strip-type">${esc(s.type)}</span>
+        <div class="strip-time-loc">
+          ${timeStr?`<span class="strip-time">${esc(timeStr)}</span>`:''}
+          ${s.loc?`<span class="strip-room">
+            <svg viewBox="0 0 16 16"><path d="M8 14s-5-4.686-5-8a5 5 0 0110 0c0 3.314-5 8-5 8z"/><circle cx="8" cy="6" r="1.5"/></svg>
+            ${esc(s.loc)}</span>`:''}
+        </div>
+      </div>
+      <div class="strip-title-row">
+        <span class="strip-id">${esc(s.id)}</span>
+        <h3 class="strip-title">${esc(s.title)}</h3>
+      </div>
+      ${s.chair?`<div class="strip-chair"><strong>Chair:</strong> ${esc(s.chair)}</div>`:''}
+    </div>
+    <button class="card-toggle" aria-expanded="false"
+            onclick="toggleCard(this,'${bodyId}')">
+      <span>View details</span>${chev()}
+    </button>
+    <div class="card-body collapsed" id="${bodyId}">
+      <div class="card-inner">
+        ${hasChairs?`<div class="chairs-grid">${chairHtml}${coChairHtml}</div>
+          <hr class="card-rule">`:''}
+        ${descBlock}${kwBlock}${presBlock}
+      </div>
+    </div>
+  </article>`;
+}
+
+function renderCard(s){ return s.isBreak?renderBreakCard(s):renderSessionCard(s); }
+
+/* ── SESSIONS VIEW ── */
+const SATELLITE_KEY = 'friday-satellite';
+
+function buildDayStrip(){
+  const regular=ALL_SESSIONS.filter(s=>!s.isSatellite&&!s.isMothership);
+  const dateMap=new Map();
+  for(const s of regular)
+    if(!dateMap.has(s.dateLabel)) dateMap.set(s.dateLabel,s.dateSortKey);
+  const days=[...dateMap.entries()].sort((a,b)=>a[1]-b[1]);
+  if(!sessDay && days.length) sessDay=days[0][0];
+
+  const hasSatellite=ALL_SESSIONS.some(s=>s.isSatellite);
+  const container=document.getElementById('sess-day-strip');
+
+  const dayChips=days.map(([label])=>`
+    <button class="day-chip${sessDay===label?' active':''}"
+      onclick="selectDay(this,'${label.replace(/'/g,"\\'")}')">
+      ${esc(label.replace(/,.*$/,''))}</button>`).join('');
+
+  const satChip=hasSatellite?`
+    <button class="day-chip${sessDay===SATELLITE_KEY?' active':''} sat-chip"
+      onclick="selectDay(this,'${SATELLITE_KEY}')">
+      Friday – Satellite</button>`:''
+
+  container.innerHTML=dayChips+satChip;
+}
+
+function selectDay(btn,day){
+  sessDay=day;
+  document.querySelectorAll('#sess-day-strip .day-chip')
+    .forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSessions();
+}
+
+function renderSessions(){
+  const list=document.getElementById('sessions-list');
+  let sessions;
+  if(sessDay===SATELLITE_KEY){
+    // Friday–Satellite: show only S-prefix sessions, no breaks/mothership
+    sessions=ALL_SESSIONS.filter(s=>s.isSatellite&&!s.isMothership);
+  } else {
+    // Regular day: exclude satellite and mothership
+    sessions=ALL_SESSIONS.filter(s=>!s.isSatellite&&!s.isMothership&&s.dateLabel===sessDay);
+  }
+
+  /* Search */
+  if(sessSearch){
+    const q=sessSearch.toLowerCase();
+    sessions=sessions.filter(s=>
+      (s.title+' '+s.type+' '+s.chair+' '+s.desc+' '+s.kw+' '+
+       s.panelists.map(p=>p.name+' '+p.paper+' '+p.desc).join(' '))
+      .toLowerCase().includes(q));
+  }
+  /* Filters — never filter out breaks */
+  if(activeTypes.size)
+    sessions=sessions.filter(s=>s.isBreak||activeTypes.has(s.type));
+  if(activeRooms.size)
+    sessions=sessions.filter(s=>s.isBreak||activeRooms.has(s.loc));
+
+  if(!sessions.length){
+    list.innerHTML=`<div class="empty">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      No sessions match. Try different keywords or clear filters.</div>`;
+    return;
+  }
+
+  /* Sort all items: by startMin first, then Event type before others, then by ID */
+  sessions.sort((a,b)=>{
+    if(a.startMin!==b.startMin) return a.startMin-b.startMin;
+    const aEv=(a.type||'').toLowerCase().trim()==='event'?0:1;
+    const bEv=(b.type||'').toLowerCase().trim()==='event'?0:1;
+    if(aEv!==bEv) return aEv-bEv;
+    return a.id.localeCompare(b.id,undefined,{numeric:true});
+  });
+
+  /* Group into time slots preserving sort order */
+  const slotMap=new Map();
+  for(const s of sessions){
+    const key=s.startLabel&&s.endLabel
+      ?`${s.startLabel} – ${s.endLabel}`:(s.startLabel||'TBD');
+    if(!slotMap.has(key)) slotMap.set(key,{min:s.startMin,sessions:[]});
+    slotMap.get(key).sessions.push(s);
+  }
+  /* Slots already in insertion order (sorted by startMin from above) */
+  list.innerHTML=[...slotMap.entries()].map(([label,{sessions:sess}])=>`
+    <div>
+      <div class="slot-hdr">${esc(label)}</div>
+      ${sess.map(renderCard).join('')}
+    </div>`).join('');
+}
+
+function buildSessionFilters(){
+  const types=[...new Set(ALL_SESSIONS
+    .filter(s=>!s.isBreak&&!s.isSatellite&&!s.isMothership).map(s=>s.type).filter(Boolean))].sort();
+  const rooms=[...new Set(ALL_SESSIONS
+    .filter(s=>!s.isSatellite&&!s.isMothership&&s.loc).map(s=>s.loc))]
+    .sort((a,b)=>{
+      const ai=ROOM_ORDER.indexOf(a),bi=ROOM_ORDER.indexOf(b);
+      if(ai<0&&bi<0)return a.localeCompare(b);
+      if(ai<0)return 1;if(bi<0)return-1;return ai-bi;
+    });
+  const makeChips=(arr,containerId,set,onChange)=>{
+    document.getElementById(containerId).innerHTML=arr.map(v=>
+      `<span class="chip${set.has(v)?' active':''}"
+        onclick="(${onChange.toString()})(this,'${esc(v.replace(/'/g,"\\'"))}')">
+        ${esc(v)}</span>`).join('');
+  };
+  makeChips(types,'type-chips',activeTypes,function(el,val){
+    activeTypes.has(val)?activeTypes.delete(val):activeTypes.add(val);
+    el.classList.toggle('active');updateFltCount();renderSessions();
+  });
+  makeChips(rooms,'room-chips',activeRooms,function(el,val){
+    activeRooms.has(val)?activeRooms.delete(val):activeRooms.add(val);
+    el.classList.toggle('active');updateFltCount();renderSessions();
+  });
+}
+function updateFltCount(){
+  const n=activeTypes.size+activeRooms.size;
+  const cnt=document.getElementById('flt-cnt');
+  const btn=document.getElementById('flt-toggle');
+  const clr=document.getElementById('clear-flt');
+  cnt.textContent=n;cnt.style.display=n?'inline-flex':'none';
+  btn.classList.toggle('active',n>0);clr.classList.toggle('show',n>0);
+}
+
+/* ── SPEAKERS VIEW ── */
+function buildSpeakers(){
+  const map=new Map();
+  for(const s of ALL_SESSIONS){
+    if(s.isMothership) continue;
+    const add=(name,affil,bio,role)=>{
+      if(!name) return;
+      const key=name.trim().toLowerCase();
+      if(!map.has(key)) map.set(key,{name:name.trim(),affil:'',bio:'',sessions:[],roles:[]});
+      const e=map.get(key);
+      if(affil&&!e.affil) e.affil=affil;
+      if(bio&&!e.bio) e.bio=bio;
+      const sessStr=`${s.id} · ${s.dateLabel.replace(/,.*$/,'')} · ${s.startLabel||'TBD'} · ${s.loc}`;
+      if(!e.sessions.includes(sessStr)) e.sessions.push(sessStr);
+      if(!e.roles.includes(role)) e.roles.push(role);
+    };
+    if(s.chair) add(s.chair,s.chairAff,s.chairBio,'Chair');
+    if(s.coChair) add(s.coChair,s.coChairAff,s.coChairBio,'Chair');
+    for(const p of s.panelists) add(p.name,p.affil,p.bio,'Presenter');
+  }
+  return [...map.values()].sort((a,b)=>{
+    const la=a.name.split(/\s+/).pop().toLowerCase();
+    const lb=b.name.split(/\s+/).pop().toLowerCase();
+    return la.localeCompare(lb);
+  });
+}
+
+function renderSpeakers(){
+  const allSpk=buildSpeakers();
+  const letters=[...new Set(allSpk.map(s=>s.name.split(/\s+/).pop()[0].toUpperCase()))].sort();
+  const alphaRow=document.getElementById('alpha-row');
+  alphaRow.innerHTML='';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l=>{
+    const btn=document.createElement('button');
+    btn.className='alpha-pill'+(letters.includes(l)?'':' disabled');
+    btn.textContent=l;
+    btn.onclick=()=>{
+      if(spkLetter===l){spkLetter=null;btn.classList.remove('active');}
+      else{spkLetter=l;
+        document.querySelectorAll('.alpha-pill').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');}
+      renderSpeakerList(allSpk);
+    };
+    alphaRow.appendChild(btn);
+  });
+  renderSpeakerList(allSpk);
+  document.getElementById('spk-search').addEventListener('input',e=>{
+    spkSearch=e.target.value.trim();renderSpeakerList(allSpk);
+  });
+}
+
+function renderSpeakerList(allSpk){
+  const container=document.getElementById('spk-scroll');
+  let filtered=allSpk;
+  if(spkSearch){
+    const q=spkSearch.toLowerCase();
+    filtered=filtered.filter(s=>
+      s.name.toLowerCase().includes(q)||s.affil.toLowerCase().includes(q));
+  }
+  if(spkLetter)
+    filtered=filtered.filter(s=>s.name.split(/\s+/).pop()[0].toUpperCase()===spkLetter);
+  if(!filtered.length){
+    container.innerHTML=`<div class="empty" style="padding:2rem">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      No speakers found.</div>`;
+    return;
+  }
+  const groups=new Map();
+  for(const s of filtered){
+    const l=s.name.split(/\s+/).pop()[0].toUpperCase();
+    if(!groups.has(l)) groups.set(l,[]);
+    groups.get(l).push(s);
+  }
+  container.innerHTML=[...groups.entries()].sort().map(([letter,spks])=>`
+    <div class="spk-letter-group">
+      <div class="spk-letter">${esc(letter)}</div>
+      ${spks.map(s=>`
+        <div class="spk-card" onclick="toggleSpkBio(this)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.4rem">
+            <div>
+              <div class="spk-name">${esc(s.name)}</div>
+              ${s.affil?`<div class="spk-affil">${esc(s.affil)}</div>`:''}
+            </div>
+            <div style="display:flex;gap:.18rem;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+              ${s.roles.includes('Chair')?`<span class="role-badge chair">Chair</span>`:''}
+              ${s.roles.includes('Presenter')?`<span class="role-badge presenter">Presenter</span>`:''}
+            </div>
+          </div>
+          ${s.sessions.map(sess=>`
+            <div class="spk-session">
+              <svg viewBox="0 0 16 16"><path d="M4 8h8M10 5l3 3-3 3"/></svg>
+              ${esc(sess)}
+            </div>`).join('')}
+          ${s.bio?`<div class="spk-bio-area">${esc(s.bio)}</div>`:''}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ── VIEW SWITCHER ── */
+document.querySelectorAll('.btab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const view=btn.dataset.view;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.btab').forEach(b=>{
+      b.classList.toggle('active',b.dataset.view===view);
+      b.setAttribute('aria-selected',String(b.dataset.view===view));
+    });
+    document.getElementById(`view-${view}`).classList.add('active');
+  });
+});
+
+/* ── FILTER PANEL ── */
+document.getElementById('flt-toggle').addEventListener('click',()=>{
+  const panel=document.getElementById('flt-panel');
+  const btn=document.getElementById('flt-toggle');
+  const open=panel.classList.toggle('open');
+  btn.setAttribute('aria-expanded',String(open));
+  panel.setAttribute('aria-hidden',String(!open));
+});
+document.getElementById('clear-flt').addEventListener('click',()=>{
+  activeTypes.clear();activeRooms.clear();
+  document.querySelectorAll('.chip.active').forEach(c=>c.classList.remove('active'));
+  updateFltCount();renderSessions();
+});
+
+/* ── SEARCH ── */
+let sessTimer;
+document.getElementById('sess-search').addEventListener('input',e=>{
+  clearTimeout(sessTimer);
+  sessTimer=setTimeout(()=>{sessSearch=e.target.value.trim();renderSessions();},180);
+});
+
+/* ── INIT ── */
+async function init(){
+  try{
+    const sessRows = await fetchTab('Sessions');
+    ALL_SESSIONS = parseSessions(sessRows);
+    if(!ALL_SESSIONS.length) throw new Error('No sessions found in sheet.');
+
+    buildDayStrip();
+    buildSessionFilters();
+    renderSessions();
+    renderSpeakers();
+
+    document.getElementById('loading').style.display='none';
+    const app=document.getElementById('app');
+    app.style.display='flex';
+  }catch(err){
+    document.getElementById('loading').style.display='none';
+    const em=document.getElementById('error-msg');
+    em.style.display='flex';
+    document.getElementById('error-detail').textContent=
+      `Error: ${err.message}. Ensure the page is served over HTTP (not as a local file).`;
+  }
+}
+init();
+</script>
+</body>
+</html>
