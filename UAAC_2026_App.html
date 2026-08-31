@@ -350,12 +350,11 @@ img{max-width:100%;display:block}
   margin-top:-.4rem;margin-bottom:.6rem}
 
 /* Publishers logos */
-.pub-logos{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:.3rem 0}
+.pub-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.75rem;padding:.3rem 0}
 .pub-logo-box{background:var(--g50);border:1px solid var(--g200);border-radius:8px;
   padding:.6rem;display:flex;align-items:center;justify-content:center;
   min-height:80px}
 .pub-logo{width:100%;max-height:56px;object-fit:contain;object-position:center;display:block}
-@media(min-width:480px){.pub-logos{grid-template-columns:repeat(3,1fr)}}
 
 /* Sponsors */
 .sponsor-area{padding:.65rem .88rem}
@@ -491,6 +490,11 @@ img{max-width:100%;display:block}
               <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/mqup.webp"
                    alt="McGill-Queen's University Press" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
             </div>
+            <div class="pub-logo-box">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/URP.webp"
+                   alt="University of Regina Press" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+            </div>
+            <!-- slots 8–10: add new pub-logo-box blocks here when ready -->
           </div>
         </div>
       </div>
