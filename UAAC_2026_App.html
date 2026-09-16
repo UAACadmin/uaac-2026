@@ -349,7 +349,22 @@ img{max-width:100%;display:block}
 .gallery-caption{font-size:.72rem;color:var(--g400);text-align:center;
   margin-top:-.4rem;margin-bottom:.6rem}
 
-/* Publishers logos */
+/* Map carousel */
+.map-carousel-wrap{overflow:hidden;position:relative;background:var(--g50);
+  border-radius:0 0 var(--radius) var(--radius)}
+.map-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth}
+.map-carousel::-webkit-scrollbar{display:none}
+.map-slide{flex:0 0 100%;scroll-snap-align:start;padding:.75rem .88rem .4rem}
+.map-slide-img{width:100%;border-radius:8px;display:block}
+.map-slide-caption{font-size:.72rem;color:var(--g400);text-align:center;
+  padding:.3rem 0 .5rem;font-style:italic}
+.map-dots{display:flex;justify-content:center;gap:.4rem;
+  padding:.4rem 0 .65rem;background:var(--g50)}
+.map-dot{width:7px;height:7px;border-radius:50%;background:var(--g200);
+  cursor:pointer;transition:background var(--tr);flex-shrink:0}
+.map-dot.active{background:var(--red)}
 .pub-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.75rem;padding:.3rem 0}
 .pub-logo-box{background:var(--g50);border:1px solid var(--g200);border-radius:8px;
   padding:.6rem;display:flex;align-items:center;justify-content:center;
@@ -450,31 +465,50 @@ img{max-width:100%;display:block}
           <svg viewBox="0 0 16 16"><path d="M8 14s-5-4.686-5-8a5 5 0 0110 0c0 3.314-5 8-5 8z"/><circle cx="8" cy="6" r="1.5"/></svg>
           <span class="info-head-title">Campus maps</span>
         </div>
-        <div class="gallery-body" id="gallery-maps">
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-other-spaces.webp"
-               alt="Other Event Spaces" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">Other Event Spaces — Concordia Campus</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor1.webp"
-               alt="1st Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 1st Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor2.webp"
-               alt="2nd Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 2nd Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor3.webp"
-               alt="3rd Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 3rd Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor5.webp"
-               alt="5th Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 5th Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor6.webp"
-               alt="6th Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 6th Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor7.webp"
-               alt="7th Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 7th Floor</div>
-          <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor11.webp"
-               alt="11th Floor" class="gallery-img" onerror="this.style.display='none'">
-          <div class="gallery-caption">EV Building — 11th Floor</div>
+        <div class="map-carousel-wrap">
+          <div class="map-carousel" id="map-carousel">
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-other-spaces.webp"
+                   alt="Other Event Spaces" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">Other Event Spaces — Concordia Campus</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor1.webp"
+                   alt="1st Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 1st Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor2.webp"
+                   alt="2nd Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 2nd Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor3.webp"
+                   alt="3rd Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 3rd Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor5.webp"
+                   alt="5th Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 5th Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor6.webp"
+                   alt="6th Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 6th Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor7.webp"
+                   alt="7th Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 7th Floor</div>
+            </div>
+            <div class="map-slide">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/map-floor11.webp"
+                   alt="11th Floor" class="map-slide-img" onerror="this.style.display='none'">
+              <div class="map-slide-caption">EV Building — 11th Floor</div>
+            </div>
+          </div>
+          <div class="map-dots" id="map-dots"></div>
         </div>
       </div>
 
@@ -518,6 +552,15 @@ img{max-width:100%;display:block}
               <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/figure-1.webp"
                    alt="Figure 1" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
             </div>
+            <div class="pub-logo-box">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/norton.webp"
+                   alt="W. W. Norton & Company" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+            </div>
+            <div class="pub-logo-box">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/racar.webp"
+                   alt="RACAR" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+            </div>
+            <!-- slots 11–12: add new pub-logo-box blocks here when ready -->
           </div>
         </div>
       </div>
@@ -1158,7 +1201,35 @@ async function init(){
       `Error: ${err.message}. Ensure the page is served over HTTP (not as a local file).`;
   }
 }
+/* ── MAP CAROUSEL ── */
+function initMapCarousel(){
+  const carousel=document.getElementById('map-carousel');
+  const dotsContainer=document.getElementById('map-dots');
+  if(!carousel||!dotsContainer) return;
+  const slides=carousel.querySelectorAll('.map-slide');
+  if(!slides.length) return;
+
+  // Build dots
+  slides.forEach((_,i)=>{
+    const dot=document.createElement('div');
+    dot.className='map-dot'+(i===0?' active':'');
+    dot.onclick=()=>{
+      carousel.scrollTo({left:carousel.offsetWidth*i,behavior:'smooth'});
+    };
+    dotsContainer.appendChild(dot);
+  });
+
+  // Update active dot on scroll
+  carousel.addEventListener('scroll',()=>{
+    const idx=Math.round(carousel.scrollLeft/carousel.offsetWidth);
+    dotsContainer.querySelectorAll('.map-dot').forEach((d,i)=>{
+      d.classList.toggle('active',i===idx);
+    });
+  },{passive:true});
+}
+
 init();
+initMapCarousel();
 </script>
 </body>
 </html>
