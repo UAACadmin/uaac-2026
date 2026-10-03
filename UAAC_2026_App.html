@@ -70,17 +70,18 @@ img{max-width:100%;display:block}
 .hdr-logo-div{width:1px;height:20px;background:rgba(255,255,255,.2);flex-shrink:0}
 
 /* Bottom tabs — 3 tabs */
-.bottom-tabs{height:var(--tabs);background:var(--g900);
-  display:flex;border-top:1px solid rgba(255,255,255,.08);
+.bottom-tabs{height:62px;background:var(--g900);
+  display:flex;border-top:2px solid rgba(255,255,255,.15);
   flex-shrink:0;z-index:50}
 .btab{flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:2px;color:rgba(255,255,255,.72);
-  font-size:.58rem;font-weight:600;letter-spacing:.04em;
-  text-transform:uppercase;transition:color var(--tr),border-color var(--tr);
-  border-top:2px solid transparent;padding-top:2px}
-.btab svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;
+  justify-content:center;gap:3px;color:rgba(255,255,255,.88);
+  font-size:.62rem;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;transition:color var(--tr),border-color var(--tr),background var(--tr);
+  border-top:3px solid transparent;padding-top:2px}
+.btab svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.8;
   fill:none;stroke-linecap:round;stroke-linejoin:round}
-.btab.active{color:var(--red);border-top-color:var(--red)}
+.btab.active{color:var(--red);border-top-color:var(--red);
+  background:rgba(192,57,43,.1)}
 
 /* Views */
 .view{display:none;flex:1;flex-direction:column;overflow:hidden}
@@ -163,7 +164,8 @@ img{max-width:100%;display:block}
 
 /* Card header strip */
 .card-strip{padding:.55rem .85rem .42rem;display:flex;
-  flex-direction:column;gap:.18rem}
+  flex-direction:column;gap:.18rem;cursor:pointer;
+  -webkit-tap-highlight-color:rgba(0,0,0,.15)}
 .card-strip.type-panel      {background:#C0392B}
 .card-strip.type-roundtable {background:#7B3535}
 .card-strip.type-workshop   {background:#7B1B38}
@@ -311,6 +313,12 @@ img{max-width:100%;display:block}
   display:flex;align-items:center;gap:.28rem;font-weight:500}
 .spk-session svg{width:10px;height:10px;stroke:currentColor;
   stroke-width:2;fill:none;flex-shrink:0}
+.spk-session-link{background:none;border:none;padding:0;cursor:pointer;
+  text-align:left;font-family:var(--sans);width:100%;
+  text-decoration:underline;text-underline-offset:2px;
+  text-decoration-color:rgba(192,57,43,.35);
+  transition:text-decoration-color var(--tr)}
+.spk-session-link:hover{text-decoration-color:var(--red)}
 .role-badge{display:inline-block;font-size:.5rem;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;padding:.05rem .3rem;
   border-radius:3px;margin-left:.28rem}
@@ -593,7 +601,15 @@ img{max-width:100%;display:block}
               <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/RACAR_logo.webp"
                    alt="RACAR" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
             </div>
-            <!-- slots 11–12: add new pub-logo-box blocks here when ready -->
+            <div class="pub-logo-box">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/c-mag.webp"
+                   alt="C Magazine" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+            </div>
+            <div class="pub-logo-box">
+              <img src="https://raw.githubusercontent.com/UAACadmin/uaac-2026/main/jcah.webp"
+                   alt="Journal of Canadian Art History / Annales d'histoire de l'art canadien" class="pub-logo" onerror="this.closest('.pub-logo-box').style.display='none'">
+            </div>
+            <!-- slots 13+: add new pub-logo-box blocks here when ready -->
           </div>
         </div>
       </div>
@@ -937,7 +953,7 @@ function renderSessionCard(s){
   </div>`:'';
 
   return`<article class="s-card" id="session-${esc(s.id)}">
-    <div class="card-strip ${tc}">
+    <div class="card-strip ${tc}" onclick="toggleCard(this.closest('.s-card').querySelector('.card-toggle'),'${bodyId}')">
       <div class="strip-top">
         <span class="strip-type">${esc(s.type)}</span>
         <div class="strip-time-loc">
@@ -1108,7 +1124,9 @@ function buildSpeakers(){
       if(affil&&!e.affil) e.affil=affil;
       if(bio&&!e.bio) e.bio=bio;
       const sessStr=`${s.id} · ${s.dateLabel.replace(/,.*$/,'')} · ${s.startLabel||'TBD'} · ${s.loc}`;
-      if(!e.sessions.includes(sessStr)) e.sessions.push(sessStr);
+      const sessKey=`${s.id}||${s.dateLabel}||${s.isSatellite?'satellite':''}`;
+      if(!e.sessions.find(x=>x.key===sessKey))
+        e.sessions.push({display:sessStr, id:s.id, dateLabel:s.dateLabel, isSatellite:s.isSatellite});
       if(!e.roles.includes(role)) e.roles.push(role);
     };
     if(s.chair) add(s.chair,s.chairAff,s.chairBio,'Chair');
@@ -1184,10 +1202,11 @@ function renderSpeakerList(allSpk){
             </div>
           </div>
           ${s.sessions.map(sess=>`
-            <div class="spk-session">
+            <button class="spk-session spk-session-link"
+              onclick="event.stopPropagation();goToSession('${esc(sess.id.replace(/'/g,"\\'"))}','${esc(sess.dateLabel.replace(/'/g,"\\'"))}',${sess.isSatellite})">
               <svg viewBox="0 0 16 16"><path d="M4 8h8M10 5l3 3-3 3"/></svg>
-              ${esc(sess)}
-            </div>`).join('')}
+              ${esc(sess.display)}
+            </button>`).join('')}
           ${s.bio?`<div class="spk-bio-area">${esc(s.bio)}</div>`:''}
         </div>`).join('')}
     </div>`).join('');
@@ -1226,6 +1245,43 @@ document.getElementById('sess-search').addEventListener('input',e=>{
   clearTimeout(sessTimer);
   sessTimer=setTimeout(()=>{sessSearch=e.target.value.trim();renderSessions();},180);
 });
+
+/* ── GO TO SESSION (from Speakers tab) ── */
+function goToSession(id, dateLabel, isSatellite){
+  // 1. Switch to Sessions view
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.btab').forEach(b=>{
+    const active=b.dataset.view==='sessions';
+    b.classList.toggle('active',active);
+    b.setAttribute('aria-selected',String(active));
+  });
+  document.getElementById('view-sessions').classList.add('active');
+
+  // 2. Select correct day chip — find chip whose onclick contains the target day
+  const targetDay=isSatellite?SATELLITE_KEY:dateLabel;
+  sessDay=targetDay;
+  const chips=[...document.querySelectorAll('#sess-day-strip .day-chip')];
+  chips.forEach(chip=>chip.classList.remove('active'));
+  const targetChip=chips.find(chip=>{
+    const oc=chip.getAttribute('onclick')||'';
+    return isSatellite ? oc.includes('satellite') : oc.includes(dateLabel.substring(0,10));
+  });
+  if(targetChip) targetChip.classList.add('active');
+  renderSessions();
+
+  // 3. Scroll to card and open it
+  requestAnimationFrame(()=>{
+    const card=document.getElementById(`session-${id}`);
+    if(!card) return;
+    card.scrollIntoView({behavior:'smooth', block:'start'});
+    // Open the card if not already open
+    const toggle=card.querySelector('.card-toggle');
+    const body=card.querySelector('.card-body');
+    if(toggle && body && body.classList.contains('collapsed')){
+      toggleCard(toggle, body.id);
+    }
+  });
+}
 
 /* ── INIT ── */
 async function init(){
