@@ -55,23 +55,22 @@ img{max-width:100%;display:block}
 .splash-bottom{width:100%;border-top:1px solid rgba(255,255,255,.08);
   padding-top:1.2rem}
 .splash-nav-label{font-size:.68rem;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;color:rgba(255,255,255,.4);
+  text-transform:uppercase;color:var(--white);
   text-align:center;margin-bottom:1rem}
-.splash-tabs{display:flex;justify-content:space-around;gap:.5rem}
+.splash-tabs{display:flex;gap:.55rem}
 .splash-tab{display:flex;flex-direction:column;align-items:center;
-  gap:.35rem;flex:1}
-.splash-tab svg{width:24px;height:24px;stroke:rgba(255,255,255,.85);
+  gap:.38rem;flex:1;padding:.72rem .4rem;border-radius:10px;
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
+  cursor:pointer;transition:background var(--tr),border-color var(--tr)}
+.splash-tab:hover,.splash-tab:active{background:var(--red);border-color:var(--red)}
+.splash-tab svg{width:24px;height:24px;stroke:var(--white);
   stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .splash-tab-lbl{font-size:.68rem;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:var(--white)}
-.splash-tab-desc{font-size:.65rem;color:rgba(255,255,255,.6);
+.splash-tab-desc{font-size:.65rem;color:rgba(255,255,255,.7);
   text-align:center;line-height:1.45}
-.splash-enter{margin-top:1.3rem;width:100%;background:var(--red);
-  border:none;border-radius:8px;padding:.7rem;font-size:.82rem;
-  font-weight:700;color:var(--white);letter-spacing:.05em;
-  cursor:pointer;text-transform:uppercase;font-family:var(--sans);
-  transition:background var(--tr)}
-.splash-enter:hover{background:var(--red-d)}
+.splash-tap-hint{font-size:.58rem;color:rgba(255,255,255,.35);
+  text-align:center;margin-top:.8rem;letter-spacing:.04em;text-transform:uppercase}
 
 /* Loading */
 #loading{position:fixed;inset:0;background:var(--g900);
@@ -119,8 +118,10 @@ img{max-width:100%;display:block}
   border-top:3px solid transparent;padding-top:2px}
 .btab svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.8;
   fill:none;stroke-linecap:round;stroke-linejoin:round}
-.btab.active{color:var(--red);border-top-color:var(--red);
-  background:rgba(192,57,43,.1)}
+.btab.active{color:var(--white);border-top-color:var(--red);
+  background:var(--red)}
+.btab:hover:not(.active){background:rgba(192,57,43,.25);color:var(--white)}
+.btab:active{background:var(--red);color:var(--white)}
 
 /* Views */
 .view{display:none;flex:1;flex-direction:column;overflow:hidden}
@@ -493,23 +494,23 @@ img{max-width:100%;display:block}
   <div class="splash-bottom">
     <div class="splash-nav-label">Navigate using the footer</div>
     <div class="splash-tabs">
-      <div class="splash-tab">
+      <div class="splash-tab" onclick="dismissSplash('sessions')">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
         <span class="splash-tab-lbl">Sessions</span>
         <span class="splash-tab-desc">Search and filter by day</span>
       </div>
-      <div class="splash-tab">
+      <div class="splash-tab" onclick="dismissSplash('speakers')">
         <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.85"/></svg>
         <span class="splash-tab-lbl">Speakers</span>
         <span class="splash-tab-desc">A–Z index</span>
       </div>
-      <div class="splash-tab">
+      <div class="splash-tab" onclick="dismissSplash('info')">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span class="splash-tab-lbl">Info</span>
         <span class="splash-tab-desc">Maps, publishers, sponsors</span>
       </div>
     </div>
-    <button class="splash-enter" id="splash-enter">View Programme →</button>
+    <div class="splash-tap-hint">Tap any section to enter</div>
   </div>
 </div>
 
@@ -1475,14 +1476,11 @@ init();
 initMapCarousel();
 
 /* ── SPLASH ── */
-(function(){
-  const splash=document.getElementById('splash-enter');
-  if(splash) splash.addEventListener('click',()=>{
-    const el=document.getElementById('splash');
-    el.classList.add('hidden');
-    setTimeout(()=>el.style.display='none', 400);
-  });
-})();
+function dismissSplash(view){
+  const el=document.getElementById('splash');
+  el.classList.add('hidden');
+  setTimeout(()=>{ el.style.display='none'; switchView(view); }, 400);
+}
 </script>
 </body>
 </html>
